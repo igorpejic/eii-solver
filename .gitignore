@@ -1,0 +1,8 @@
+secrets.json
+*.pyc
+*.swp
+*.swo
+secrets.json*
+.ipynb_checkpoints
+
+*.pyc
