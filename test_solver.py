@@ -2,14 +2,14 @@ import unittest
 from solver import *
 
 
-class TestBoard(unittest.TestCase):
+class Testgrid(unittest.TestCase):
 
-    def test_initialize_board(self):
+    def test_initialize_grid(self):
         rows = 6
         cols = 6
-        board = initialize_board(rows, cols)
-        self.assertEqual(board.shape, (rows, cols, 4))
-        self.assertEqual(board[0][0][0], -1)
+        grid = initialize_grid(rows, cols)
+        self.assertEqual(grid.shape, (rows, cols, 4))
+        self.assertEqual(grid[0][0][0], -1)
 
     def test_initialize_pieces(self):
         pieces = initialize_pieces()
@@ -36,7 +36,7 @@ class TestBoard(unittest.TestCase):
 class TestAction(unittest.TestCase):
 
     def test_place_piece_on_grid(self):
-        grid = initialize_board(6, 6)
+        grid = initialize_grid(6, 6)
         piece = (GRAY, 2, 3, 4)
         success, grid, next_position = place_piece_on_grid(grid, piece, (0, 1))
 
@@ -48,7 +48,7 @@ class TestAction(unittest.TestCase):
         self.assertEqual(next_position, (0, 2))
 
     def test_get_next_position(self):
-        grid = initialize_board(6, 6)
+        grid = initialize_grid(6, 6)
         piece = (1, 2, 3, 4)
         next_position = get_next_position(grid, (1, 1))
         self.assertEqual(
@@ -57,7 +57,7 @@ class TestAction(unittest.TestCase):
         )
 
     def test_is_move_legal_borders(self):
-        grid = initialize_board(6, 6)
+        grid = initialize_grid(6, 6)
         piece = (GRAY, 2, GRAY, 3)
         self.assertEqual(is_move_legal(grid, piece, (0, 0)), True)
 
@@ -90,7 +90,7 @@ class TestAction(unittest.TestCase):
         self.assertEqual(is_move_legal(grid, piece, (5, 5)), False)
 
     def test_border_tile_cannot_be_in_center(self):
-        grid = initialize_board(6, 6)
+        grid = initialize_grid(6, 6)
         piece = (GRAY, 2, 3, 3)
         self.assertEqual(is_move_legal(grid, piece, (1, 1)), False)
         
@@ -104,7 +104,7 @@ class TestAction(unittest.TestCase):
         self.assertEqual(is_move_legal(grid, piece, (1, 1)), False)
 
     def test_border_tiles_neighbours(self):
-        grid = initialize_board(6, 6)
+        grid = initialize_grid(6, 6)
         grid[0][0][NORTH] = GRAY
         grid[0][0][SOUTH] = 2
         grid[0][0][WEST] = GRAY

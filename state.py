@@ -1,3 +1,18 @@
+import numpy as np
+import numpy as np
+import json
+from collections import OrderedDict
+
+class UUID(object):
+    def __init__(self):
+        self.i = 0
+
+    def uuid(self):
+        self.i += 1
+        return self.i
+
+_uuid = UUID()
+
 class State(object):
 
     def __init__(self, grid, pieces, parent=None, solution_pieces_order=None):

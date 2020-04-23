@@ -4,6 +4,9 @@ import numpy as np
 import random
 from collections import OrderedDict
 from state import State
+from solver import rotate_piece, place_piece_on_grid
+
+ALL_pieces_USED = 'A'
 
 def get_max_index(_list):
     max_index = 0
@@ -21,7 +24,6 @@ class CustomMCTS():
 
         self.initial_pieces, self.initial_grid = pieces, grid
         self.state = State(self.initial_grid, self.initial_pieces)
-        self.solution_checker = SolutionChecker(len(pieces), get_rows(grid), get_cols(grid))
         self.strategy=strategy
         self.n_pieces_placed = 0
         self.solution_pieces_order = []
@@ -37,43 +39,44 @@ class CustomMCTS():
         val = 1
         next_position = (0, 0)
         while len(state.pieces):
-            tile_placed = False
+            piece_placed = False
             states = []
             best_score = 0
-            for i, piece in enumerate(pieces):
+            for i, piece in enumerate(state.pieces):
                 for rotation in range(4):
                     rotated_piece = rotate_piece(piece, rotation)
-                    success, new_grid, next_position = place_piece_on_grid(
-                        grid, rotated_piece, next_position)
+                    success, new_grid, potential_next_position = place_piece_on_grid(
+                        state.grid, rotated_piece, next_position)
 
                     self.n_pieces_placed += 1
                     if not success:
                         # cannot place piece. this branch will not be considered
                         continue
                     else:
-                        tile_placed = True
+                        next_position = potential_next_position
+                        piece_placed = True
                         new_pieces = np.delete(state.pieces, i)
                         new_state = State(grid=new_grid, pieces=new_pieces, parent=state)
                         state.children.append(new_state)
                         simulation_result, solution_pieces_order = self.perform_simulations(new_state, N=N)
                         if simulation_result == ALL_pieces_USED:
                             print('solution found in simulation!')
-                            print(tile)
+                            print(piece)
                             solution_found = True
-                            if state.tile_placed:
-                                self.solution_pieces_order.extend([state.tile_placed] + [tile] + solution_pieces_order)
+                            if state.piece_placed:
+                                self.solution_pieces_order.extend([state.piece_placed] + [piece] + solution_pieces_order)
                             else:
-                                self.solution_pieces_order.extend([tile] + solution_pieces_order)
+                                self.solution_pieces_order.extend([piece] + solution_pieces_order)
                             return initial_state, depth, solution_found
                         new_state.score = simulation_result
                         if new_state.score > best_score:
-                            best_tile = tile
+                            best_piece = piece
                             best_score = new_state.score
-                        new_state.tile_placed = tile
-                        state.solution_pieces_order.append(tile)
+                        new_state.piece_placed = piece
+                        state.solution_pieces_order.append(piece)
                         states.append(new_state)
-            if not tile_placed:
-                # no tile was placed, it's a dead end; end game
+            if not piece_placed:
+                # no piece was placed, it's a dead end; end game
                 return initial_state, depth, solution_found
 
             # PERFORMANCE:
@@ -85,9 +88,9 @@ class CustomMCTS():
             best_action = get_max_index(states) 
             prev_state = state
             new_state = states[best_action]
-            print(best_tile, prev_state.tile_placed)
-            if prev_state.tile_placed:
-                self.solution_pieces_order.append(prev_state.tile_placed)
+            print(best_piece, prev_state.piece_placed)
+            if prev_state.piece_placed:
+                self.solution_pieces_order.append(prev_state.piece_placed)
 
 
             state = new_state
@@ -140,25 +143,25 @@ class CustomMCTS():
             if not valid_moves:
                 return depth, simulation_root_state, solution_pieces_order
 
-            next_random_tile_index = random.randint(0, len(valid_moves) -1)
+            next_random_piece_index = random.randint(0, len(valid_moves) -1)
             success, new_grid = SolutionChecker.get_next_turn(
-                state, valid_moves[next_random_tile_index], val, destroy_state=True)
+                state, valid_moves[next_random_piece_index], val, destroy_state=True)
             self.n_pieces_placed += 1
-            solution_pieces_order.append(valid_moves[next_random_tile_index])
+            solution_pieces_order.append(valid_moves[next_random_piece_index])
 
             if success == ALL_pieces_USED:
                 print('grid is full')
                 # no LFB on grid; probably means grid is full
-                solution_pieces_order.append(valid_moves[next_random_tile_index])
+                solution_pieces_order.append(valid_moves[next_random_piece_index])
                 return ALL_pieces_USED, simulation_root_state, solution_pieces_order
             elif success == NO_NEXT_POSITION_pieces_UNUSED:
                 print('no next position with unused pieces')
                 return depth, simulation_root_state, solution_pieces_order
-            elif success == TILE_CANNOT_BE_PLACED:
-                # cannot place the tile. return depth reached
+            elif success == piece_CANNOT_BE_PLACED:
+                # cannot place the piece. return depth reached
                 return depth, simulation_root_state, solution_pieces_order
             else:
-                new_pieces = SolutionChecker.eliminate_pair_pieces(state.pieces, valid_moves[next_random_tile_index])
+                new_pieces = SolutionChecker.eliminate_pair_pieces(state.pieces, valid_moves[next_random_piece_index])
                 new_state = State(grid=new_grid, pieces=new_pieces, parent=state)
 
                 new_state.score = -1  #  because no choice is performed for sequent actions

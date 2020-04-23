@@ -13,7 +13,7 @@ EAST = 3
 
 piece_type = np.dtype([('NORTH', np.int8), ('SOUTH', np.int8), ('WEST', np.int8), ('EAST', np.int8)])
 
-def initialize_board(rows, cols):
+def initialize_grid(rows, cols):
     return np.full((rows, cols, SIDES), EMPTY, dtype=np.int8)
 
 def initialize_pieces():
@@ -91,6 +91,7 @@ def is_move_legal(grid, piece, position):
 
     rows, cols = grid.shape[:2]
 
+    print(position)
     row, col = position
 
     if (
