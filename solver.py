@@ -4,6 +4,7 @@ import numpy as np
 SIDES = 4  # tetravex
 
 EMPTY = -1  # indicating free cell in solution
+GRAY = 0  # indicating border
 
 NORTH = 0
 SOUTH = 1
@@ -49,3 +50,79 @@ def pieces_to_orientations(pieces):
         ret_pieces[3 + i * 4][2] = piece[0]
         ret_pieces[3 + i * 4][3] = piece[1]
     return ret_pieces
+
+def rotate_piece(piece, orientation):
+    '''
+    orientation is integer; rotation clockwise
+    '''
+
+    if orientation == 0:
+        ret_piece = (piece[0], piece[1], piece[2], piece[3])
+    elif orientation == 1:
+        ret_piece = (piece[2], piece[3], piece[1], piece[0])
+    elif orientation == 2:
+        ret_piece = (piece[1], piece[0], piece[3], piece[2])
+    elif orientation == 3:
+        ret_piece = (piece[3], piece[2], piece[0], piece[1])
+    return ret_piece
+
+def place_piece_on_grid(grid, piece, position):
+    '''
+    place position on some position.
+    position is determined by strategy.
+    '''
+    rows, cols = grid.shape[:2]
+
+    grid = np.copy(grid)
+
+    success = is_move_legal(grid, piece, position)
+    if not success:
+        return False, None, None
+
+    grid[position[0]][position[1]][0] = piece[0]
+    grid[position[0]][position[1]][1] = piece[1]
+    grid[position[0]][position[1]][2] = piece[2]
+    grid[position[0]][position[1]][3] = piece[3]
+    next_position = get_next_position(grid, position)
+    return success, grid, next_position
+
+
+def is_move_legal(grid, piece, position):
+
+    rows, cols = grid.shape[:2]
+
+    row, col = position
+
+    if (
+        # tiles at border with non-matching borders
+        (position[0] == 0 and piece[NORTH] != GRAY) or
+        (position[0] == rows - 1 and piece[SOUTH] != GRAY) or
+        (position[1] == 0 and piece[WEST] != GRAY) or
+        (position[1] == cols - 1 and piece[EAST] != GRAY) or 
+
+        # border tiles in center
+        (position[0] != 0 and piece[NORTH] == GRAY) or
+        (position[0] != rows -1 and piece[SOUTH] == GRAY) or
+        (position[1] != 0 and piece[WEST] == GRAY) or
+        (position[1] != cols -1 and piece[EAST] == GRAY)
+    ):
+        return False
+    elif (
+        (row > 0 and piece[NORTH] != grid[row - 1][col][SOUTH] and grid[row - 1][col][SOUTH] != EMPTY) or 
+        (row < rows -1 and piece[SOUTH] != grid[row + 1][col][NORTH] and grid[row + 1][col][NORTH] != EMPTY) or
+        (col > 0 and piece[WEST] != grid[row][col - 1][EAST] and grid[row][col - 1][EAST] != EMPTY) or
+        (col < cols - 1 and piece[EAST] != grid[row][col + 1][WEST] and grid[row][col + 1][WEST] != EMPTY)
+    ):
+        return False
+    return True
+ 
+
+
+def get_next_position(grid, prev_position):
+    rows, cols, _ = grid.shape
+
+    next_position = (
+        ((prev_position[0] * cols) + prev_position[1] + 1) // cols, 
+        ((prev_position[0] * cols) + prev_position[1] + 1) % cols 
+    )
+    return next_position
