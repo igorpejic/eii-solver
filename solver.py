@@ -16,17 +16,27 @@ piece_type = np.dtype([('NORTH', np.int8), ('SOUTH', np.int8), ('WEST', np.int8)
 def initialize_grid(rows, cols):
     return np.full((rows, cols, SIDES), EMPTY, dtype=np.int8)
 
-def initialize_pieces(n_pieces=4, is_natlo_puzzles=False):
-    filename = f"{n_pieces}pieces.txt"
-    if is_natlo_puzzles:
-        filename = 'natlo_puzzles/' + filename
+PYTHON_FORMAT = 'python_format' 
+JAVA_FORMAT = 'java_format' 
+NATLO_FORMAT = 'natlo_format' 
+
+def initialize_pieces(n_pieces=4, puzzles_format=PYTHON_FORMAT, filename=None):
     with open(filename, 'r') as f:
         pieces = np.array([], dtype=piece_type)
         for line in f:
-            if is_natlo_puzzles:
+            if puzzles_format == JAVA_FORMAT:
+                puzzle_subpiece = [int(x) for x in line.strip().split(' ') if x]
+                for i in range(len(puzzle_subpiece) // SIDES):
+                    pieces = np.append(pieces, np.array(
+                        (puzzle_subpiece[i * SIDES + NORTH],
+                         puzzle_subpiece[i * SIDES + 2],
+                         puzzle_subpiece[i * SIDES + 3],
+                         puzzle_subpiece[i * SIDES + 1]),
+                        dtype=piece_type))
+            elif puzzles_format == NATLO_FORMAT:
                 piece = line.strip().split(", ")
                 pieces = np.append(pieces, np.array((piece[WEST], piece[NORTH], piece[EAST], piece[SOUTH]), dtype=piece_type))
-            else:
+            elif puzzles_format == PYTHON_FORMAT:
                 piece = line.strip().split(" ")
                 pieces = np.append(pieces, np.array((piece[NORTH], piece[SOUTH], piece[WEST], piece[EAST]), dtype=piece_type))
     return pieces
