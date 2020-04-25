@@ -4,9 +4,9 @@ import numpy as np
 import random
 from collections import OrderedDict
 from state import State
-from solver import rotate_piece, place_piece_on_grid
+from solver import rotate_piece, place_piece_on_grid, get_valid_next_moves
 
-ALL_pieces_USED = 'A'
+ALL_PIECES_USED = 'A'
 
 def get_max_index(_list):
     max_index = 0
@@ -20,15 +20,16 @@ def get_max_index(_list):
     return max_index
 
 class CustomMCTS():
-    def __init__(self, pieces, grid, strategy='max_depth'):
+    def __init__(self, pieces, grid, strategy='max_depth', is_circular=False):
 
         self.initial_pieces, self.initial_grid = pieces, grid
         self.state = State(self.initial_grid, self.initial_pieces)
         self.strategy=strategy
         self.n_pieces_placed = 0
         self.solution_pieces_order = []
+        self.is_circular = is_circular
 
-    def predict(self, temp=1, N=3000):
+    def predict(self, temp=1, N=1000):
         initial_state = self.state
         state = self.state
         available_pieces = state.pieces
@@ -42,56 +43,48 @@ class CustomMCTS():
             piece_placed = False
             states = []
             best_score = 0
-            for i, piece in enumerate(state.pieces):
-                for rotation in range(4):
-                    rotated_piece = rotate_piece(piece, rotation)
-                    success, new_grid, potential_next_position = place_piece_on_grid(
-                        state.grid, rotated_piece, next_position)
-
-                    self.n_pieces_placed += 1
-                    if not success:
-                        # cannot place piece. this branch will not be considered
-                        continue
-                    else:
-                        next_position = potential_next_position
-                        piece_placed = True
-                        new_pieces = np.delete(state.pieces, i)
-                        new_state = State(grid=new_grid, pieces=new_pieces, parent=state)
-                        state.children.append(new_state)
-                        simulation_result, solution_pieces_order = self.perform_simulations(new_state, N=N)
-                        if simulation_result == ALL_pieces_USED:
-                            print('solution found in simulation!')
-                            print(piece)
-                            solution_found = True
-                            if state.piece_placed:
-                                self.solution_pieces_order.extend([state.piece_placed] + [piece] + solution_pieces_order)
-                            else:
-                                self.solution_pieces_order.extend([piece] + solution_pieces_order)
-                            return initial_state, depth, solution_found
-                        new_state.score = simulation_result
-                        if new_state.score > best_score:
-                            best_piece = piece
-                            best_score = new_state.score
-                        new_state.piece_placed = piece
-                        state.solution_pieces_order.append(piece)
-                        states.append(new_state)
+            for j in range(0, len(state.pieces) * 4):
+                rotation = j % 4
+                piece_index = j // 4
+                piece = rotate_piece(state.pieces[piece_index], rotation)
+                success, new_grid, potential_next_position = place_piece_on_grid(
+                    state.grid, piece, next_position, is_circular=self.is_circular)
+                self.n_pieces_placed += 1
+                if not success:
+                    # cannot place piece. this branch will not be considered
+                    continue
+                else:
+                    piece_placed = True
+                    new_pieces = np.delete(state.pieces, piece_index)
+                    new_state = State(grid=new_grid, pieces=new_pieces, parent=state)
+                    state.children.append(new_state)
+                    simulation_result, solution_pieces_order = self.perform_simulations(new_state, potential_next_position, N=N)
+                    if simulation_result == ALL_PIECES_USED:
+                        print('Solution found in simulation!')
+                        solution_found = True
+                        if state.piece_placed:
+                            self.solution_pieces_order.extend([[state.piece_placed, next_position]] + solution_pieces_order)
+                        else:
+                            self.solution_pieces_order.extend([[piece, next_position]] + solution_pieces_order)
+                        return initial_state, depth, solution_found
+                    new_state.score = simulation_result
+                    new_state.next_position = potential_next_position
+                    state.solution_pieces_order.append([piece, next_position])
+                    state.piece_placed = piece
+                    states.append(new_state)
             if not piece_placed:
                 # no piece was placed, it's a dead end; end game
+                print(state.pieces)
                 return initial_state, depth, solution_found
-
-            # PERFORMANCE:
-            # for visualization this can be changed
-            # all pieces will be 1 inside the frame for performance reasons
-            # val += 1
 
             depth += 1
             best_action = get_max_index(states) 
             prev_state = state
             new_state = states[best_action]
-            print(best_piece, prev_state.piece_placed)
             if prev_state.piece_placed:
-                self.solution_pieces_order.append(prev_state.piece_placed)
-
+                self.solution_pieces_order.append([prev_state.piece_placed, next_position])
+            print(self.solution_pieces_order)
+            next_position = new_state.next_position
 
             state = new_state
 
@@ -100,7 +93,7 @@ class CustomMCTS():
         return initial_state, depth, solution_found
 
 
-    def perform_simulations(self, state, N=3000):
+    def perform_simulations(self, state, position, N=3000):
         '''
         Given a state perform N simulations.
         One simulation consists of either filling container or having no more pieces to place.
@@ -109,10 +102,10 @@ class CustomMCTS():
         '''
         depths = []
         for n in range(N):
-            depth, simulation_root_state, solution_pieces_order = self.perform_simulation(state.copy())
-            if depth == ALL_pieces_USED:
+            depth, simulation_root_state, solution_pieces_order = self.perform_simulation(state.copy(), position)
+            if depth == ALL_PIECES_USED:
                 state.children = simulation_root_state.children
-                return ALL_pieces_USED, solution_pieces_order
+                return ALL_PIECES_USED, solution_pieces_order
             else:
                 depths.append(depth)
         if self.strategy=='max_depth':
@@ -122,7 +115,7 @@ class CustomMCTS():
         return _max, None
 
 
-    def perform_simulation(self, state):
+    def perform_simulation(self, state, next_position):
         '''
         Performs the simulation until legal moves are available.
         If simulation ends by finding a solution, a root state starting from this simulation is returned
@@ -133,39 +126,40 @@ class CustomMCTS():
         simulation_root_state = state  # in case simulation ends in solution; these states are the solution
         if len(state.pieces) == 0:
             print('perform_simulation called with empty pieces')
-            return ALL_pieces_USED, simulation_root_state, solution_pieces_order
+            return ALL_PIECES_USED, simulation_root_state, solution_pieces_order
+        grid = state.grid
         while True:
             val = 1
             if len(state.pieces) == 0:
                 print('solution found in simulation')
-                return ALL_pieces_USED, simulation_root_state, solution_pieces_order
-            valid_moves = SolutionChecker.get_valid_next_moves(state, state.pieces )
+                return ALL_PIECES_USED, simulation_root_state, solution_pieces_order
+
+            valid_moves = get_valid_next_moves(state.grid, state.pieces, next_position)
             if not valid_moves:
                 return depth, simulation_root_state, solution_pieces_order
 
             next_random_piece_index = random.randint(0, len(valid_moves) -1)
-            success, new_grid = SolutionChecker.get_next_turn(
-                state, valid_moves[next_random_piece_index], val, destroy_state=True)
+            # print(len(valid_moves), state.pieces, next_random_piece_index)
+            # print(next_random_piece_index)
+
+            next_piece = valid_moves[next_random_piece_index]
+
+            piece_to_place = rotate_piece(state.pieces[next_piece[0]], next_piece[1])
+            success, grid, _next_position = place_piece_on_grid(
+                grid, rotate_piece(state.pieces[next_piece[0]], next_piece[1]),
+                next_position, is_circular=self.is_circular
+            )
+            
             self.n_pieces_placed += 1
-            solution_pieces_order.append(valid_moves[next_random_piece_index])
+            solution_pieces_order.append([piece_to_place, next_position])
+            next_position = _next_position
 
-            if success == ALL_pieces_USED:
-                print('grid is full')
-                # no LFB on grid; probably means grid is full
-                solution_pieces_order.append(valid_moves[next_random_piece_index])
-                return ALL_pieces_USED, simulation_root_state, solution_pieces_order
-            elif success == NO_NEXT_POSITION_pieces_UNUSED:
-                print('no next position with unused pieces')
-                return depth, simulation_root_state, solution_pieces_order
-            elif success == piece_CANNOT_BE_PLACED:
-                # cannot place the piece. return depth reached
-                return depth, simulation_root_state, solution_pieces_order
-            else:
-                new_pieces = SolutionChecker.eliminate_pair_pieces(state.pieces, valid_moves[next_random_piece_index])
-                new_state = State(grid=new_grid, pieces=new_pieces, parent=state)
+            new_pieces = np.copy(state.pieces)
+            new_pieces = np.delete(state.pieces, next_random_piece_index)
+            new_state = State(grid=grid, pieces=new_pieces, parent=state)
 
-                new_state.score = -1  #  because no choice is performed for sequent actions
-                state.children.append(new_state)
-                state = new_state
+            new_state.score = -1  #  because no choice is performed for sequent actions
+            state.children.append(new_state)
+            state = new_state
             depth += 1
         return depth, simulation_root_state, solution_pieces_order

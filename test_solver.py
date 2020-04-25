@@ -56,6 +56,70 @@ class TestAction(unittest.TestCase):
             (1, 2)
         )
 
+    def test_get_next_position_circular(self):
+        grid = initialize_grid(3, 3)
+        piece = (1, 2, 3, 4)
+        next_position = get_next_position(grid, (1, 1), is_circular=True)
+        self.assertEqual(
+            get_next_position(grid, (0, 0), is_circular=True),
+            (0, 1)
+        )
+
+        self.assertEqual(
+            get_next_position(grid, (0, 1), is_circular=True),
+            (0, 2)
+        )
+
+        self.assertEqual(
+            get_next_position(grid, (0, 2), is_circular=True),
+            (1, 2)
+        )
+
+        self.assertEqual(
+            get_next_position(grid, (1, 2), is_circular=True),
+            (2, 2)
+        )
+
+        self.assertEqual(
+            get_next_position(grid, (2, 2), is_circular=True),
+            (2, 1)
+        )
+
+        self.assertEqual(
+            get_next_position(grid, (2, 1), is_circular=True),
+            (2, 0)
+        )
+
+        self.assertEqual(
+            get_next_position(grid, (2, 0), is_circular=True),
+            (1, 0)
+        )
+
+        self.assertEqual(
+            get_next_position(grid, (1, 0), is_circular=True),
+            (1, 1)
+        )
+    def test_get_next_position_circular_4_4(self):
+        grid = initialize_grid(4, 4)
+        piece = (1, 2, 3, 4)
+        next_position = get_next_position(grid, (1, 1), is_circular=True)
+        self.assertEqual(
+            get_next_position(grid, (1, 0), is_circular=True),
+            (1, 1)
+        )
+        self.assertEqual(
+            get_next_position(grid, (1, 1), is_circular=True),
+            (1, 2)
+        )
+        self.assertEqual(
+            get_next_position(grid, (1, 2), is_circular=True),
+            (2, 1)
+        )
+        self.assertEqual(
+            get_next_position(grid, (2, 1), is_circular=True),
+            (2, 2)
+        )
+
     def test_is_move_legal_borders(self):
         grid = initialize_grid(6, 6)
         piece = (GRAY, 2, GRAY, 3)

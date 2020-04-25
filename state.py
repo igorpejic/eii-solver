@@ -27,6 +27,7 @@ class State(object):
             self.solution_pieces_order = parent.solution_pieces_order
         else:
             self.solution_pieces_order = []
+        self.piece_placed = None
 
     def uuid_str(self):
       return f'{self.uuid}'
@@ -81,4 +82,4 @@ class State(object):
         output_grid = ''
         if len(self.pieces) <= 4:
             output_grid = self.grid
-        return f'({self.uuid}) Remaining pieces: {len(self.pieces) / ORIENTATIONS}, Tile placed: {self.tile_placed}. pieces: {output_list}. Sim. depth:({self.score}) {output_grid}'
+        return f'({self.uuid}) Remaining pieces: {len(self.pieces)}, Tile placed: {self.piece_placed}. pieces: {self.pieces}. Sim. depth:({self.score}) {output_grid}'

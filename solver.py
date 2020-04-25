@@ -16,12 +16,19 @@ piece_type = np.dtype([('NORTH', np.int8), ('SOUTH', np.int8), ('WEST', np.int8)
 def initialize_grid(rows, cols):
     return np.full((rows, cols, SIDES), EMPTY, dtype=np.int8)
 
-def initialize_pieces():
-    with open("4pieces.txt", 'r') as f:
+def initialize_pieces(n_pieces=4, is_natlo_puzzles=False):
+    filename = f"{n_pieces}pieces.txt"
+    if is_natlo_puzzles:
+        filename = 'natlo_puzzles/' + filename
+    with open(filename, 'r') as f:
         pieces = np.array([], dtype=piece_type)
         for line in f:
-            piece = line.strip().split(" ")
-            pieces = np.append(pieces, np.array((piece[NORTH], piece[SOUTH], piece[WEST], piece[EAST]), dtype=piece_type))
+            if is_natlo_puzzles:
+                piece = line.strip().split(", ")
+                pieces = np.append(pieces, np.array((piece[WEST], piece[NORTH], piece[EAST], piece[SOUTH]), dtype=piece_type))
+            else:
+                piece = line.strip().split(" ")
+                pieces = np.append(pieces, np.array((piece[NORTH], piece[SOUTH], piece[WEST], piece[EAST]), dtype=piece_type))
     return pieces
 
 def pieces_to_orientations(pieces):
@@ -66,7 +73,7 @@ def rotate_piece(piece, orientation):
         ret_piece = (piece[3], piece[2], piece[0], piece[1])
     return ret_piece
 
-def place_piece_on_grid(grid, piece, position):
+def place_piece_on_grid(grid, piece, position, is_circular=False):
     '''
     place position on some position.
     position is determined by strategy.
@@ -83,15 +90,27 @@ def place_piece_on_grid(grid, piece, position):
     grid[position[0]][position[1]][1] = piece[1]
     grid[position[0]][position[1]][2] = piece[2]
     grid[position[0]][position[1]][3] = piece[3]
-    next_position = get_next_position(grid, position)
+    next_position = get_next_position(grid, position, is_circular=is_circular)
     return success, grid, next_position
+
+def get_valid_next_moves(grid, pieces, position):
+
+    '''
+    return valid next moves as a tuple indicating (piece index, orientation)
+    '''
+    possible_moves = []
+    for i, piece in enumerate(pieces):
+        for orientation in range(SIDES):
+            _piece = rotate_piece(piece, orientation)
+            if is_move_legal(grid, _piece, position):
+                possible_moves.append((i, orientation))
+    return possible_moves
 
 
 def is_move_legal(grid, piece, position):
 
     rows, cols = grid.shape[:2]
 
-    print(position)
     row, col = position
 
     if (
@@ -119,11 +138,46 @@ def is_move_legal(grid, piece, position):
  
 
 
-def get_next_position(grid, prev_position):
+def get_next_position(grid, prev_position, is_circular=True):
     rows, cols, _ = grid.shape
 
-    next_position = (
-        ((prev_position[0] * cols) + prev_position[1] + 1) // cols, 
-        ((prev_position[0] * cols) + prev_position[1] + 1) % cols 
-    )
+    if is_circular:
+        '''
+        first fill the border
+        '''
+        if prev_position[0] == 0 and prev_position[1] == cols - 1: # right top corner
+            next_position = (prev_position[0] + 1, prev_position[1])
+        elif prev_position[0] == rows - 1 and prev_position[1] == cols - 1: # right bottom corner
+            next_position = (prev_position[0], prev_position[1] - 1)
+        elif prev_position[0] == rows - 1 and prev_position[1] == 0: # left bottom corner
+            next_position = (prev_position[0] - 1, prev_position[1])
+        elif prev_position[0] == 0 and prev_position[1] == 0: # left top corner
+            next_position = (prev_position[0], prev_position[1] + 1)
+        elif prev_position[0] == 1 and prev_position[1] == 0: # frame has been filled
+            next_position = (prev_position[0], prev_position[1] + 1)
+        elif prev_position[0] == 0:  # top row
+            next_position = (prev_position[0], prev_position[1] + 1)
+        elif prev_position[0] == rows - 1:  # bottom row
+            next_position = (prev_position[0], prev_position[1] - 1)
+        elif prev_position[1] == 0:  # left side
+            next_position = (prev_position[0] - 1, prev_position[1])
+        elif prev_position[1] == cols - 1:  # right side
+            next_position = (prev_position[0] + 1, prev_position[1])
+        else:
+            # row by row avoiding frame
+            if prev_position[0] == rows -1 and prev_position[1] == cols -1:
+                next_position = None
+            elif prev_position[1] == cols - 2:
+                next_position = (prev_position[0] + 1, 1)
+            else: # not close to any border, just do the normal
+                next_position = (
+                    ((prev_position[0] * cols) + prev_position[1] + 1) // cols, 
+                    ((prev_position[0] * cols) + prev_position[1] + 1) % cols 
+                )
+    else:
+        # row by row
+        next_position = (
+            ((prev_position[0] * cols) + prev_position[1] + 1) // cols, 
+            ((prev_position[0] * cols) + prev_position[1] + 1) % cols 
+        )
     return next_position
