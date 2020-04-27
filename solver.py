@@ -19,12 +19,49 @@ def initialize_grid(rows, cols):
 PYTHON_FORMAT = 'python_format' 
 JAVA_FORMAT = 'java_format' 
 NATLO_FORMAT = 'natlo_format' 
+BENOIST_FORMAT = 'benoist_format'
+VANSTONE_FORMAT = 'vanstone_format'
 
 def initialize_pieces(n_pieces=4, puzzles_format=PYTHON_FORMAT, filename=None):
+    grid_size = None
     with open(filename, 'r') as f:
         pieces = np.array([], dtype=piece_type)
-        for line in f:
-            if puzzles_format == JAVA_FORMAT:
+        for i, line in enumerate(f):
+            if puzzles_format == BENOIST_FORMAT:
+                if i == 0:
+                    grid_size = int(line.strip())
+                elif i == 1:
+                    number_of_colors = int(line.strip())
+                elif i == 2:
+                    number_of_hints = int(line.strip())
+                elif i <= (2 + number_of_hints):
+                    # skip hints
+                    continue
+                else:
+                    piece = line.strip().split(" ")
+                    pieces = np.append(pieces, np.array(
+                        (piece[NORTH],
+                         piece[2],
+                         piece[3],
+                         piece[1]),
+                        dtype=piece_type))
+
+            elif puzzles_format == VANSTONE_FORMAT:
+                if i == 0:
+                    grid_size = int(line.strip())
+                elif i ==1 or i == 2:
+                    # number of colors
+                    continue
+                else:
+                    piece = line.strip().split("  ")
+                    pieces = np.append(pieces, np.array(
+                        (piece[NORTH],
+                         piece[2],
+                         piece[3],
+                         piece[1]),
+                        dtype=piece_type))
+
+            elif puzzles_format == JAVA_FORMAT:
                 puzzle_subpiece = [int(x) for x in line.strip().split(' ') if x]
                 for i in range(len(puzzle_subpiece) // SIDES):
                     pieces = np.append(pieces, np.array(
@@ -39,7 +76,20 @@ def initialize_pieces(n_pieces=4, puzzles_format=PYTHON_FORMAT, filename=None):
             elif puzzles_format == PYTHON_FORMAT:
                 piece = line.strip().split(" ")
                 pieces = np.append(pieces, np.array((piece[NORTH], piece[SOUTH], piece[WEST], piece[EAST]), dtype=piece_type))
-    return pieces
+
+    return pieces, grid_size
+
+def pieces_to_editor_format(pieces):
+    import math
+    pieces_break = int(math.sqrt(len(pieces)))
+    output_str = ''
+    for i, piece in enumerate(pieces):
+        if i % pieces_break == 0:
+            output_str += '\n'
+        output_str += (f'{piece[NORTH]} {piece[EAST]} {piece[SOUTH]} {piece[WEST]}    ')
+
+    print(output_str)
+    return output_str
 
 def pieces_to_orientations(pieces):
     '''
