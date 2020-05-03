@@ -1,11 +1,12 @@
 #include "solver.hpp"
 
 #include <iostream>
+#include "mcts.hpp"
 using namespace std;
 
 int main (int argc, const char* argv[]) {
     // insert code here...
-    cout << "Hello, World!\n";
-    initialize_pieces(argv[1]);
+    std::cout << "Hello, World!\n";
+    CustomMCTS(initialize_pieces(argv[1]));
     return 0;
 }

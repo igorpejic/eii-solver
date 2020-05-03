@@ -2,14 +2,17 @@
 #include <tuple>
 #include <cstring>
 #include <fstream>
+#include <vector>
 #include <iostream>
-using namespace std;
+#include <array>
+
 #define NORTH 0
 #define EAST 1
 #define SOUTH 2
 #define WEST 3
 #define GRAY 0
 #define EMPTY -1 
+using namespace std;
 
 int *rotate_piece(int *piece, int orientation) {
     int *rotated_piece = new int[4];
@@ -56,11 +59,12 @@ int *initialize_grid(int rows, int cols) {
     return grid;
 }
 
-int **initialize_pieces(const char *filename) {
+
+std::vector<std::array<int, 4>> initialize_pieces(const char *filename) {
     cout << filename;
     std::ifstream infile(filename);
     int i = 0;
-    int **pieces;
+    std::vector<std::array<int, 4>> pieces;
     int top, right, down, left;
     int n_pieces;
     int pieces_index = 0;
@@ -69,16 +73,10 @@ int **initialize_pieces(const char *filename) {
         if (i == 0) {
             sscanf(line.c_str(), "%i", &n_pieces);
             n_pieces *= n_pieces;
-            pieces = (int**)malloc(n_pieces * sizeof(int*));
-            for (int j = 0; j < n_pieces; j++) {
-                pieces[j] = (int*)malloc(sizeof(int) * 4);
-            }
         } else if (i> 2) {
             sscanf(line.c_str(), "%d %d %d %d", &top, &right, &down, &left);
-            pieces[pieces_index][0] = top;
-            pieces[pieces_index][1] = right;
-            pieces[pieces_index][2] = down;
-            pieces[pieces_index][3] = left;
+            std::array<int, 4> piece = {top, right, down, left};
+            pieces.push_back(piece);
             pieces_index++;
         }
         i++;
