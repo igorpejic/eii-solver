@@ -34,7 +34,8 @@ TEST_CASE("Is move legal", "[factorial]") {
 
     int ***grid = initialize_grid(rows, cols);
     int piece[4] = {1, 2, 3, 4};
-    REQUIRE(is_move_legal(grid, cols, rows == -1);
-    REQUIRE(grid[5][5][3] == -1);
-    REQUIRE(grid[5][5][3] == -1);
+    int position[2] = {0, 0};
+    REQUIRE(is_move_legal(grid, piece, position, 6, 6) == false);
+    int piece_2[4] = {0, 1, 2, 0};
+    REQUIRE(is_move_legal(grid, piece_2, position, 6, 6) == true);
 }

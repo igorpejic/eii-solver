@@ -139,11 +139,11 @@ def place_piece_on_grid(grid, piece, position, is_circular=False):
     place position on some position.
     position is determined by strategy.
     '''
-    grid = copy.deepcopy(grid)
 
     success = is_move_legal(grid, piece, position)
     if not success:
         return False, None, None
+    grid = copy.deepcopy(grid)
 
     grid[position[0]][position[1]][0] = piece[0]
     grid[position[0]][position[1]][1] = piece[1]

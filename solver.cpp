@@ -2,6 +2,12 @@
 #include <fstream>
 #include <iostream>
 using namespace std;
+#define NORTH 0
+#define EAST 1
+#define SOUTH 2
+#define WEST 3
+#define GRAY 0
+#define EMPTY -1 
 
 int *rotate_piece(int *piece, int orientation) {
     int *rotated_piece = new int[4];
@@ -109,6 +115,7 @@ bool is_move_legal(int ***grid, int *piece, int *position, int rows, int cols) {
         (col < cols - 1 && piece[EAST] != grid[row][col + 1][WEST] && grid[row][col + 1][WEST] != EMPTY)
     ) {
         return false;
+    }
 
     return true;
 }
