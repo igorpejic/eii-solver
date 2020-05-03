@@ -12,15 +12,15 @@ class Testgrid(unittest.TestCase):
         self.assertEqual(grid[0][0][0], -1)
 
     def test_initialize_pieces(self):
-        pieces = initialize_pieces()
-        self.assertEqual(pieces.shape[0], 4)
+        pieces, _ = initialize_pieces(filename='4pieces.txt')
         self.assertEqual(tuple(pieces[0]), (1, 0, 0, 3))
         self.assertEqual(tuple(pieces[1]), (17, 0, 0, 1))
         self.assertEqual(tuple(pieces[2]), (15, 0, 0, 17))
         self.assertEqual(tuple(pieces[3]), (3, 0, 0, 15))
 
     def test_pieces_to_orientations(self):
-        pieces = pieces_to_orientations(initialize_pieces())
+        pieces, _ = initialize_pieces(filename='4pieces.txt')
+        pieces =  pieces_to_orientations(pieces)
         self.assertEqual(pieces.shape[0], 4 * 4)
 
         self.assertEqual(tuple(pieces[0]), (1, 0, 0, 3))

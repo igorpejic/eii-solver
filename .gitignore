@@ -6,3 +6,4 @@ secrets.json*
 .ipynb_checkpoints
 
 *.pyc
+*.out

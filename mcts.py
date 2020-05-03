@@ -149,8 +149,8 @@ class CustomMCTS():
                 grid, rotate_piece(state.pieces[next_piece[0]], next_piece[1]),
                 next_position, is_circular=self.is_circular
             )
-            
             self.n_pieces_placed += 1
+
             solution_pieces_order.append([piece_to_place, next_position])
             next_position = _next_position
 
