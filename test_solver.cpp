@@ -17,3 +17,24 @@ TEST_CASE("Get next position", "[factorial]") {
     REQUIRE(next_position[0] == 1);
     REQUIRE(next_position[1] == 2);
 }
+
+TEST_CASE("Initialize grid", "[factorial]") {
+    int cols = 6; 
+    int rows = 6; 
+
+    int ***grid = initialize_grid(rows, cols);
+    REQUIRE(grid[0][0][0] == -1);
+    REQUIRE(grid[5][5][3] == -1);
+    REQUIRE(grid[5][5][3] == -1);
+}
+
+TEST_CASE("Is move legal", "[factorial]") {
+    int cols = 6; 
+    int rows = 6; 
+
+    int ***grid = initialize_grid(rows, cols);
+    int piece[4] = {1, 2, 3, 4};
+    REQUIRE(is_move_legal(grid, cols, rows == -1);
+    REQUIRE(grid[5][5][3] == -1);
+    REQUIRE(grid[5][5][3] == -1);
+}

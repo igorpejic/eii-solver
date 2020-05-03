@@ -2,6 +2,7 @@ import math
 import json
 import numpy as np
 import random
+import copy
 from collections import OrderedDict
 from state import State
 from solver import rotate_piece, place_piece_on_grid, get_valid_next_moves
@@ -55,7 +56,8 @@ class CustomMCTS():
                     continue
                 else:
                     piece_placed = True
-                    new_pieces = np.delete(state.pieces, piece_index)
+                    new_pieces = copy.deepcopy(state.pieces)
+                    del new_pieces[piece_index]
                     new_state = State(grid=new_grid, pieces=new_pieces, parent=state)
                     state.children.append(new_state)
                     simulation_result, solution_pieces_order = self.perform_simulations(new_state, potential_next_position, N=N)
@@ -154,8 +156,8 @@ class CustomMCTS():
             solution_pieces_order.append([piece_to_place, next_position])
             next_position = _next_position
 
-            new_pieces = np.copy(state.pieces)
-            new_pieces = np.delete(state.pieces, next_random_piece_index)
+            new_pieces = copy.deepcopy(state.pieces)
+            del new_pieces[next_random_piece_index]
             new_state = State(grid=grid, pieces=new_pieces, parent=state)
 
             new_state.score = -1  #  because no choice is performed for sequent actions
@@ -348,8 +350,8 @@ class Node():
         success, grid, next_position = place_piece_on_grid(
             self.grid, piece_to_place, self.next_position, is_circular=self.is_circular
         )
-        new_pieces = np.copy(self.pieces)
-        new_pieces = np.delete(new_pieces, next_piece[0])
+        new_pieces = copy.deepcopy(self.pieces)
+        del new_pieces[next_piece[0]]
         is_terminal = False
         new_possible_moves = get_valid_next_moves(grid, new_pieces, next_position)
         if not new_possible_moves:

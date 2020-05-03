@@ -12,11 +12,12 @@ def main():
                         help='sum the integers (default: find the max)')
     args = parser.parse_args()
     puzzles_format = JAVA_FORMAT
-    filename = 'editor_puzzles/5x5x4.txt'
+    # filename = 'editor_puzzles/5x5x4.txt'
 
     # puzzles_format = BENOIST_FORMAT
-    #puzzles_format = VANSTONE_FORMAT
-    #filename = 'bvanston_puzzles/E2BenchmarkWithoutHints/E_7_1.b6i6.nohint.txt'
+    puzzles_format = VANSTONE_FORMAT
+    # filename = 'bvanston_puzzles/E2BenchmarkWithoutHints/E_7_1.b6i6.nohint.txt'
+    filename = 'bvanston_puzzles/Data6_2_6/RandPuzzle06x06_100.txt'
     pieces, grid_size = initialize_pieces(
         puzzles_format=puzzles_format, 
         filename=filename

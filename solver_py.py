@@ -8,9 +8,9 @@ EMPTY = -1  # indicating free cell in solution
 GRAY = 0  # indicating border
 
 NORTH = 0
-SOUTH = 2
-WEST = 3
-EAST = 1
+SOUTH = 1
+WEST = 2
+EAST = 3
 
 
 def initialize_grid(rows, cols):
@@ -41,25 +41,25 @@ def initialize_pieces(n_pieces=4, puzzles_format=PYTHON_FORMAT, filename=None):
                     piece = line.strip().split(" ")
                     pieces.append(
                         (piece[NORTH],
-                         piece[1],
                          piece[2],
-                         piece[3]
+                         piece[3],
+                         piece[1]
                          )
                     )
 
             elif puzzles_format == VANSTONE_FORMAT:
                 if i == 0:
-                    grid_size = int(line.strip().split()[0])
+                    grid_size = int(line.strip())
                 elif i ==1 or i == 2:
                     # number of colors
                     continue
                 else:
-                    piece = [int(x) for x in line.strip().split("  ")]
+                    piece = line.strip().split("  ")
                     pieces.append(
                         (piece[NORTH],
-                         piece[1],
                          piece[2],
-                         piece[3]),
+                         piece[3],
+                         piece[1]),
                         )
 
             elif puzzles_format == JAVA_FORMAT:
@@ -67,16 +67,16 @@ def initialize_pieces(n_pieces=4, puzzles_format=PYTHON_FORMAT, filename=None):
                 for i in range(len(puzzle_subpiece) // SIDES):
                     pieces.append(
                         (puzzle_subpiece[i * SIDES + NORTH],
-                         puzzle_subpiece[i * SIDES + 1],
                          puzzle_subpiece[i * SIDES + 2],
-                         puzzle_subpiece[i * SIDES + 3])
+                         puzzle_subpiece[i * SIDES + 3],
+                         puzzle_subpiece[i * SIDES + 1])
                         )
             elif puzzles_format == NATLO_FORMAT:
                 piece = [int(x) for x in line.strip().split(", ")]
                 pieces.append((piece[WEST], piece[NORTH], piece[EAST], piece[SOUTH]))
             elif puzzles_format == PYTHON_FORMAT:
                 piece = [int(x) for x in line.strip().split(" ")]
-                pieces.append((piece[NORTH], piece[3], piece[1], piece[2]))
+                pieces.append((piece[NORTH], piece[SOUTH], piece[WEST], piece[EAST]))
 
     return pieces, grid_size
 
@@ -103,20 +103,20 @@ def pieces_to_orientations(pieces):
         ret_pieces[0 + i * 4][2] = piece[2]
         ret_pieces[0 + i * 4][3] = piece[3]
 
-        ret_pieces[1 + i * 4][0] = piece[3]
-        ret_pieces[1 + i * 4][1] = piece[0]
+        ret_pieces[1 + i * 4][0] = piece[2]
+        ret_pieces[1 + i * 4][1] = piece[3]
         ret_pieces[1 + i * 4][2] = piece[1]
-        ret_pieces[1 + i * 4][3] = piece[2]
+        ret_pieces[1 + i * 4][3] = piece[0]
 
-        ret_pieces[2 + i * 4][0] = piece[2]
-        ret_pieces[2 + i * 4][1] = piece[3]
-        ret_pieces[2 + i * 4][2] = piece[0]
-        ret_pieces[2 + i * 4][3] = piece[1]
+        ret_pieces[2 + i * 4][0] = piece[1]
+        ret_pieces[2 + i * 4][1] = piece[0]
+        ret_pieces[2 + i * 4][2] = piece[3]
+        ret_pieces[2 + i * 4][3] = piece[2]
 
-        ret_pieces[3 + i * 4][0] = piece[1]
+        ret_pieces[3 + i * 4][0] = piece[3]
         ret_pieces[3 + i * 4][1] = piece[2]
-        ret_pieces[3 + i * 4][2] = piece[3]
-        ret_pieces[3 + i * 4][3] = piece[0]
+        ret_pieces[3 + i * 4][2] = piece[0]
+        ret_pieces[3 + i * 4][3] = piece[1]
     return ret_pieces
 
 def rotate_piece(piece, orientation):
@@ -127,11 +127,11 @@ def rotate_piece(piece, orientation):
     if orientation == 0:
         ret_piece = (piece[0], piece[1], piece[2], piece[3])
     elif orientation == 1:
-        ret_piece = (piece[3], piece[0], piece[1], piece[2])
+        ret_piece = (piece[2], piece[3], piece[1], piece[0])
     elif orientation == 2:
-        ret_piece = (piece[2], piece[3], piece[0], piece[1])
+        ret_piece = (piece[1], piece[0], piece[3], piece[2])
     elif orientation == 3:
-        ret_piece = (piece[1], piece[2], piece[3], piece[0])
+        ret_piece = (piece[3], piece[2], piece[0], piece[1])
     return ret_piece
 
 def place_piece_on_grid(grid, piece, position, is_circular=False):
