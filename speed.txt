@@ -2,3 +2,5 @@ numpy arrays = 90s 175666 pieces = 1951 piece placement per sec
 
 without numpy arrays = 32.78 154101 = 4701 piece placement per sec
 
+2754
+

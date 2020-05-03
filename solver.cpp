@@ -1,4 +1,6 @@
 #include <cstdlib>
+#include <tuple>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 using namespace std;
@@ -42,18 +44,12 @@ int *get_next_position(int cols, int *prev_position) {
     return next_position;
 }
 
-int ***initialize_grid(int rows, int cols) {
-    int ***grid = (int***)malloc(rows*sizeof(int**));
-    for (int i=0; i < rows; i++) {
-        grid[i] = (int**)malloc(cols * sizeof(int*));
-        for(int j = 0; j < cols; j++) {
-            grid[i][j] = (int*)malloc(4 * sizeof(int));
-        }
-    }
+int *initialize_grid(int rows, int cols) {
+    int *grid = (int*)malloc(rows*cols*4*sizeof(int));
     for (int i=0; i < rows; i++) {
         for(int j = 0; j < cols; j++) {
             for(int k = 0; k < 4; k++) {
-                grid[i][j][k] = -1;
+                grid[i * cols * 4 + j * 4 + k] = -1;
             }
         }
     }
@@ -90,7 +86,7 @@ int **initialize_pieces(const char *filename) {
     return pieces;
 }
 
-bool is_move_legal(int ***grid, int *piece, int *position, int rows, int cols) {
+bool is_move_legal(int *grid, int *piece, int *position, int rows, int cols) {
     int row = position[0];
     int col = position[1];
 
@@ -109,13 +105,30 @@ bool is_move_legal(int ***grid, int *piece, int *position, int rows, int cols) {
     ) {
         return false;
     } else if (
-        (row > 0 && piece[NORTH] != grid[row - 1][col][SOUTH] && grid[row - 1][col][SOUTH] != EMPTY) || 
-        (row < rows -1 && piece[SOUTH] != grid[row + 1][col][NORTH] && grid[row + 1][col][NORTH] != EMPTY) ||
-        (col > 0 && piece[WEST] != grid[row][col - 1][EAST] && grid[row][col - 1][EAST] != EMPTY) ||
-        (col < cols - 1 && piece[EAST] != grid[row][col + 1][WEST] && grid[row][col + 1][WEST] != EMPTY)
+        (row > 0 && piece[NORTH] != grid[(row - 1) * cols * 4 + col * 4 + SOUTH] && grid[(row - 1) * cols * 4 + col * 4 + SOUTH] != EMPTY) || 
+        (row < rows -1 && piece[SOUTH] != grid[(row + 1) * cols * 4 + col * 4 + NORTH] && grid[(row + 1) * cols * 4 + col * 4 + NORTH] != EMPTY) ||
+        (col > 0 && piece[WEST] != grid[row * cols * 4 + (col - 1) * 4 + EAST] && grid[row * cols * 4 + (col - 1) * 4 + EAST] != EMPTY) ||
+        (col < cols - 1 && piece[EAST] != grid[row * cols * 4 + (col + 1) * 4 + WEST] && grid[row * cols * 4 + (col + 1) * 4 + WEST] != EMPTY)
     ) {
         return false;
     }
 
     return true;
+}
+
+std::tuple<bool, int*, int*> place_piece_on_grid(int *grid, int *piece, int *position, int rows, int cols) {
+    if (!is_move_legal(grid, piece, position, rows, cols)) {
+        return std::make_tuple(false, grid, position);
+    }
+    int *new_grid = (int*)malloc(sizeof(int) * rows * cols * 4);
+    memcpy(new_grid, grid, sizeof(int) * rows * cols * 4);
+
+    new_grid[position[0] * cols * 4 + position[1] * 4 + 0] = piece[0];
+    new_grid[position[0] * cols * 4 + position[1] * 4 + 1] = piece[1];
+    new_grid[position[0] * cols * 4 + position[1] * 4 + 2] = piece[2];
+    new_grid[position[0] * cols * 4 + position[1] * 4 + 3] = piece[3];
+    std::cout << new_grid[0];
+    int *next_position = get_next_position(cols, position);
+
+    return std::make_tuple(true, new_grid, next_position);
 }
