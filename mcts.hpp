@@ -28,6 +28,10 @@ class CustomMCTS {
     std::tuple<state_t, int, bool> predict(int);
     std::tuple<bool, float, std::vector<std::pair<std::array<int, 4>, std::array<int, 2> > > > perform_simulations(state_t state, std::array<int, 2> next_position, int N);
     std::tuple<int, std::vector<std::pair<std::array<int, 4>, std::array<int, 2> > >> perform_simulation(state_t state, std::array<int, 2> next_position);
+
+    void print_pieces_solution_order();
 };
 
 int get_max_index(std::vector<state_t> states);
+void print_grid(int *grid, int rows, int cols);
+void print_pieces(std::vector<std::array<int, 4>> m_pieces);

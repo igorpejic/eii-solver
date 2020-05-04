@@ -53,7 +53,7 @@ int *initialize_grid(int rows, int cols) {
     for (int i=0; i < rows; i++) {
         for(int j = 0; j < cols; j++) {
             for(int k = 0; k < 4; k++) {
-                grid[i * cols * 4 + j * 4 + k] = -1;
+                grid[i * cols * 4 + j * 4 + k] = EMPTY;
             }
         }
     }

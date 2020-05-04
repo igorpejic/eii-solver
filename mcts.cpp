@@ -36,10 +36,13 @@ std::tuple<state_t, int, bool>CustomMCTS::predict(int N=1000) {
     std::array<int, 2> next_position = {0, 0};
 
     std::vector<std::pair<std::array<int, 4>, std::array<int, 2>>> solution_pieces_order;
+    srand(1);
 
     while (state->m_pieces.size()) {
         int piece_placed = false;
         std::vector<state_t> states;
+        //print_grid(state->m_grid, m_rows, m_cols);
+        //print_pieces(state->m_pieces);
         for(int j = 0; j < state->m_pieces.size() * 4; j++) {
             int rotation = j % 4;
             int piece_index = j / 4;
@@ -93,7 +96,6 @@ std::tuple<state_t, int, bool>CustomMCTS::predict(int N=1000) {
 
         depth += 1;
         int best_action = get_max_index(states);
-        std::cout << best_action << " "  << next_position[1] << std::endl;
         state_t *prev_state = state;
         if (prev_state->m_piece_placed[0] != NO_VALUE) {
             std::vector<std::pair<std::array<int, 4>, std::array<int, 2>>> vector_to_insert;
@@ -102,7 +104,10 @@ std::tuple<state_t, int, bool>CustomMCTS::predict(int N=1000) {
         }
         new_state = states[best_action];
         next_position = new_state.m_next_position;
+        //std::cout << "Best action" << best_action <<std::endl;
+        //std::cout << "Next position (" << next_position[0] << " "  << next_position[1] << ")" << std::endl;
         state = &new_state;
+        print_pieces_solution_order();
     }
     std::cout << "Pieces size: " << state->m_pieces.size() << std::endl;
 }
@@ -191,4 +196,32 @@ int get_max_index(std::vector<state_t> states) {
         }
     }
     return max_index;
+}
+
+void CustomMCTS::print_pieces_solution_order() {
+    for (int i =0; i < m_solution_pieces_order.size(); i++) {
+        std::cout << "{(" << m_solution_pieces_order[i].first[0] << "," <<  m_solution_pieces_order[i].first[1] << "," << m_solution_pieces_order[i].first[2] << "," << m_solution_pieces_order[i].first[3] << "," << ") (" <<  m_solution_pieces_order[i].second[0] << " " << m_solution_pieces_order[i].second[1] << ")}  " ;
+    }
+    std::cout << std::endl;
+}
+
+void print_grid(int *grid, int rows, int cols) {
+    for (int i=0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
+            std::cout << grid[i * cols * 4 + j * 4 + 0] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+void print_pieces(std::vector<std::array<int, 4>> m_pieces) {
+    for (int i=0; i < m_pieces.size(); i++) {
+        std::cout << "(" 
+            << m_pieces[i][0] << ","
+            << m_pieces[i][1] << ","
+            << m_pieces[i][2] << ","
+            << m_pieces[i][3] << ","
+            << ")" << " ";
+    }
+    std::cout << std::endl;
 }

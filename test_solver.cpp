@@ -9,13 +9,38 @@ TEST_CASE("Rotate piece", "[factorial]") {
 }
 
 TEST_CASE("Get next position", "[factorial]") {
-    int cols = 4; 
+    int cols = 6; 
     std::array<int, 4> piece = {1, 2, 3, 4}; 
-    int position[2] = {1, 1};
+    std::array<int, 2> position = {1, 1};
 
-    int *next_position = get_next_position(cols, position);
+    std::array<int, 2> next_position = get_next_position(cols, position);
     REQUIRE(next_position[0] == 1);
     REQUIRE(next_position[1] == 2);
+
+    position = {1, 2};
+    next_position = get_next_position(cols, position);
+    REQUIRE(next_position[0] == 1);
+    REQUIRE(next_position[1] == 3);
+
+    position = {1, 3};
+    next_position = get_next_position(cols, position);
+    REQUIRE(next_position[0] == 1);
+    REQUIRE(next_position[1] == 4);
+
+    position = {1, 4};
+    next_position = get_next_position(cols, position);
+    REQUIRE(next_position[0] == 1);
+    REQUIRE(next_position[1] == 5);
+
+    position = {1, 5};
+    next_position = get_next_position(cols, position);
+    REQUIRE(next_position[0] == 2);
+    REQUIRE(next_position[1] == 0);
+
+    position = {3, 5};
+    next_position = get_next_position(cols, position);
+    REQUIRE(next_position[0] == 4);
+    REQUIRE(next_position[1] == 0);
 }
 
 TEST_CASE("Initialize grid", "[factorial]") {
@@ -34,7 +59,7 @@ TEST_CASE("Is move legal", "[factorial]") {
 
     int *grid = initialize_grid(rows, cols);
     std::array<int, 4> piece = {1, 2, 3, 4}; 
-    int position[2] = {0, 0};
+    std::array<int, 2> position = {0, 0};
     REQUIRE(is_move_legal(grid, piece, position, 6, 6) == false);
     std::array<int, 4> piece_2 = {0, 1, 2, 0}; 
     REQUIRE(is_move_legal(grid, piece_2, position, 6, 6) == true);
@@ -45,12 +70,12 @@ TEST_CASE("Is move legal", "[factorial]") {
 TEST_CASE("Place piece on grid", "[factorial]") {
     int cols = 6; 
     int rows = 6; 
-    int position[2] = {0, 0};
+    std::array<int, 2> position = {0, 0};
     std::array<int, 4> piece = {0, 2, 3, 0}; 
     int *grid = initialize_grid(rows, cols);
 
     int *new_grid; 
-    int *new_position;
+    std::array<int, 2> new_position;
     bool success;
 
     std::tie(success, new_grid, new_position) = place_piece_on_grid(grid, piece, position, rows, cols);
@@ -65,7 +90,7 @@ TEST_CASE("Place piece on grid", "[factorial]") {
 TEST_CASE("Get valid next moves", "[factorial]") {
     int cols = 6; 
     int rows = 6; 
-    int position[2] = {0, 0};
+    std::array<int, 2> position = {0, 0};
     std::array<int, 4> piece = {1, 2, 0, 0}; 
     std::vector<std::array<int, 4>> pieces;
     pieces.push_back(piece);
