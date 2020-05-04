@@ -23,6 +23,7 @@ class State(object):
         self.children = []
         self.score = None
         self.tile_placed = None
+        self.previous_tile = None
         if parent and parent.solution_pieces_order:
             self.solution_pieces_order = parent.solution_pieces_order
         else:

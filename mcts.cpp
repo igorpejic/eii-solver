@@ -3,6 +3,7 @@
 #include <utility>      // std::pair, std::make_pair
 #include <array>
 #include <iostream>
+#include <iomanip>
 #include "mcts.hpp"
 #include "solver.hpp"
 #define ALL_PIECES_USED -2
@@ -58,6 +59,10 @@ std::tuple<state_t, int, bool>CustomMCTS::predict(int N=1000) {
                 //cannot place piece. this branch will not be considered
                 continue;
             } else {
+                //std::cout << "success" << piece[0] << piece[1] << piece[2] << piece[3] << std::endl;
+                //std::cout << "piece" << state->m_pieces[piece_index][0] << state->m_pieces[piece_index][1] << state->m_pieces[piece_index][2] << state->m_pieces[piece_index][3] << std::endl;
+                //print_grid(state->m_grid, m_rows, m_cols);
+                
                 piece_placed = true;
                 auto new_pieces = state->m_pieces;
                 new_pieces.erase(new_pieces.begin() + piece_index);
@@ -84,6 +89,7 @@ std::tuple<state_t, int, bool>CustomMCTS::predict(int N=1000) {
                 } else {
                     new_state.m_score = simulation_depth;
                     new_state.m_next_position = potential_next_position;
+                    new_state.m_previous_piece = piece;
                     state->m_piece_placed = piece;
                     states.push_back(new_state);
                 }
@@ -97,11 +103,12 @@ std::tuple<state_t, int, bool>CustomMCTS::predict(int N=1000) {
         depth += 1;
         int best_action = get_max_index(states);
         state_t *prev_state = state;
-        if (prev_state->m_piece_placed[0] != NO_VALUE) {
-            std::vector<std::pair<std::array<int, 4>, std::array<int, 2>>> vector_to_insert;
-            vector_to_insert.push_back(std::make_pair(prev_state->m_piece_placed, next_position));
-            m_solution_pieces_order.insert(m_solution_pieces_order.end(), vector_to_insert.begin(), vector_to_insert.end());
-        }
+        new_state = states[best_action];
+
+        std::vector<std::pair<std::array<int, 4>, std::array<int, 2>>> vector_to_insert;
+        vector_to_insert.push_back(std::make_pair(new_state.m_previous_piece, next_position));
+        m_solution_pieces_order.insert(m_solution_pieces_order.end(), vector_to_insert.begin(), vector_to_insert.end());
+
         new_state = states[best_action];
         next_position = new_state.m_next_position;
         //std::cout << "Best action" << best_action <<std::endl;
@@ -206,12 +213,28 @@ void CustomMCTS::print_pieces_solution_order() {
 }
 
 void print_grid(int *grid, int rows, int cols) {
-    for (int i=0; i < rows; i++) {
-        for(int j = 0; j < cols; j++) {
-            std::cout << grid[i * cols * 4 + j * 4 + 0] << " ";
+    for (int line = 0; line < rows; line++) {
+        int matrix_row = line;
+        for (int col = 0; col < cols; col++) {
+            std::cout<< "\\" << std::setw(2) << grid[matrix_row * cols * 4 + col * 4] << " /" << "|";
         }
-        std::cout << std::endl;
+        std::cout<< std::endl;
+
+        for (int col = 0; col < cols; col++) {
+            std::cout<< std::setw(2) << grid[matrix_row * cols * 4 + col * 4 + 3]  << "X" << std::setw(2) << grid[matrix_row * cols * 4 + col * 4 + 1] << "|";
+        }
+        std::cout<< std::endl;
+
+        for (int col = 0; col < cols; col++) {
+            std::cout<< "/" << std::setw(2) << grid[matrix_row * cols * 4 + col * 4 + 2] << " \\" << "|";
+        }
+        std::cout<< std::endl;
+        for (int col = 0; col < cols; col++) {
+            std::cout<< "------";
+        }
+        std::cout<< std::endl;
     }
+    std::cout<< "\n" << std::endl;
 }
 
 void print_pieces(std::vector<std::array<int, 4>> m_pieces) {

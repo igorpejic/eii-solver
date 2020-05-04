@@ -72,6 +72,7 @@ class CustomMCTS():
                     new_state.next_position = potential_next_position
                     state.solution_pieces_order.append([piece, next_position])
                     state.piece_placed = piece
+                    new_state.previous_tile = piece
                     states.append(new_state)
             if not piece_placed:
                 # no piece was placed, it's a dead end; end game
@@ -82,8 +83,7 @@ class CustomMCTS():
             best_action = get_max_index(states) 
             prev_state = state
             new_state = states[best_action]
-            if prev_state.piece_placed:
-                self.solution_pieces_order.append([prev_state.piece_placed, next_position])
+            self.solution_pieces_order.append([new_state.previous_tile, next_position])
             print(self.solution_pieces_order)
             next_position = new_state.next_position
 

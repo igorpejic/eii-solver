@@ -5,7 +5,19 @@
 TEST_CASE("Rotate piece", "[factorial]") {
     std::array<int, 4> piece = {1, 2, 3, 4}; 
     REQUIRE(rotate_piece(piece, 1)[0] == 4);
+    REQUIRE(rotate_piece(piece, 1)[1] == 1);
+    REQUIRE(rotate_piece(piece, 1)[2] == 2);
+    REQUIRE(rotate_piece(piece, 1)[3] == 3);
+
     REQUIRE(rotate_piece(piece, 2)[0] == 3);
+    REQUIRE(rotate_piece(piece, 2)[1] == 4);
+    REQUIRE(rotate_piece(piece, 2)[2] == 1);
+    REQUIRE(rotate_piece(piece, 2)[3] == 2);
+
+    REQUIRE(rotate_piece(piece, 3)[0] == 2);
+    REQUIRE(rotate_piece(piece, 3)[1] == 3);
+    REQUIRE(rotate_piece(piece, 3)[2] == 4);
+    REQUIRE(rotate_piece(piece, 3)[3] == 1);
 }
 
 TEST_CASE("Get next position", "[factorial]") {
@@ -65,6 +77,43 @@ TEST_CASE("Is move legal", "[factorial]") {
     REQUIRE(is_move_legal(grid, piece_2, position, 6, 6) == true);
     std::array<int, 4> piece_3 = {0, 2, 0, 0}; 
     REQUIRE(is_move_legal(grid, piece_3, position, 6, 6) == false);
+}
+
+TEST_CASE("Is move legal 2", "[factorial]") {
+    int cols = 6; 
+    int rows = 6; 
+
+    int *grid = initialize_grid(rows, cols);
+
+    std::array<int, 4> piece = {0, 4, 1, 0}; 
+    std::array<int, 2> position = {0, 0};
+
+    int *new_grid; 
+    std::array<int, 2> new_position;
+    bool success;
+
+    std::tie(success, new_grid, new_position) = place_piece_on_grid(grid, piece, position, rows, cols);
+    REQUIRE(success == true);
+    REQUIRE(new_grid[0] == 0);
+    REQUIRE(new_grid[1] == 4);
+    REQUIRE(new_grid[2] == 1);
+    REQUIRE(new_grid[3] == 0);
+    REQUIRE(new_position[0] == 0);
+    REQUIRE(new_position[1] == 1);
+
+    piece = {0, 2, 1, 3}; 
+    REQUIRE(is_move_legal(new_grid, piece, new_position, 6, 6) == false);
+    REQUIRE(is_move_legal(new_grid, rotate_piece(piece, 1), new_position, 6, 6) == false);
+    REQUIRE(is_move_legal(new_grid, rotate_piece(piece, 2), new_position, 6, 6) == false);
+    REQUIRE(is_move_legal(new_grid, rotate_piece(piece, 3), new_position, 6, 6) == false);
+
+    std::tie(success, new_grid, new_position) = place_piece_on_grid(new_grid, piece, new_position, rows, cols);
+    REQUIRE(success == false);
+
+    std::vector<std::array<int, 4>> pieces;
+    pieces.push_back(piece);
+    auto _result = get_valid_next_moves(new_grid, pieces, position, 6, 6);
+    REQUIRE(_result.size() == 0);
 }
 
 TEST_CASE("Place piece on grid", "[factorial]") {

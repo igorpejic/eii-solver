@@ -5,6 +5,7 @@
 
 struct state_t {       
     std::vector<std::array<int, 4>> m_pieces;        
+    std::array<int, 4> m_previous_piece;        
     std::array<int, 4> m_piece_placed;        
     int *m_grid;        
     std::vector<state_t> m_children;
