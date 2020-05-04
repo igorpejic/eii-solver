@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <utility>      // std::pair, std::make_pair
 #include <tuple>
 #include <cstring>
 #include <fstream>
@@ -14,8 +15,8 @@
 #define EMPTY -1 
 using namespace std;
 
-int *rotate_piece(int *piece, int orientation) {
-    int *rotated_piece = new int[4];
+std::array<int, 4> rotate_piece(std::array<int, 4> piece, int orientation) {
+    std:array<int, 4> rotated_piece;
     if (orientation == 0) {
         rotated_piece[0] = piece[0];
         rotated_piece[1] = piece[1];
@@ -84,7 +85,7 @@ std::vector<std::array<int, 4>> initialize_pieces(const char *filename) {
     return pieces;
 }
 
-bool is_move_legal(int *grid, int *piece, int *position, int rows, int cols) {
+bool is_move_legal(int *grid, std::array<int, 4> piece, int *position, int rows, int cols) {
     int row = position[0];
     int col = position[1];
 
@@ -114,7 +115,7 @@ bool is_move_legal(int *grid, int *piece, int *position, int rows, int cols) {
     return true;
 }
 
-std::tuple<bool, int*, int*> place_piece_on_grid(int *grid, int *piece, int *position, int rows, int cols) {
+std::tuple<bool, int*, int*> place_piece_on_grid(int *grid, std::array<int, 4> piece, int *position, int rows, int cols) {
     if (!is_move_legal(grid, piece, position, rows, cols)) {
         return std::make_tuple(false, grid, position);
     }
@@ -129,4 +130,16 @@ std::tuple<bool, int*, int*> place_piece_on_grid(int *grid, int *piece, int *pos
     int *next_position = get_next_position(cols, position);
 
     return std::make_tuple(true, new_grid, next_position);
+}
+
+std::vector<std::pair<int, int>> get_valid_next_moves(int *grid, std::vector<std::array<int, 4>> pieces, int *position, int rows, int cols) {
+    std::vector<std::pair<int, int>> possible_moves;
+    for (int i = 0; i < pieces.size(); i++) {
+        for (int orientation = 0; orientation < 4; orientation++) {
+            if(is_move_legal(grid, rotate_piece(pieces[i], orientation), position, rows, cols)) {
+                possible_moves.push_back(std::make_pair(i, orientation));
+            }
+        }
+    }
+    return possible_moves;
 }

@@ -146,6 +146,9 @@ class TestAction(unittest.TestCase):
         piece = (3, 3, GRAY, 3)
         self.assertEqual(is_move_legal(grid, piece, (1, 0)), False)
 
+        piece = (GRAY, 2, GRAY, GRAY)
+        self.assertEqual(is_move_legal(grid, piece, (1, 0)), False)
+
         piece = (3, 3, GRAY, 3)
         self.assertEqual(is_move_legal(grid, piece, (5, 0)), False)
 

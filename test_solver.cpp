@@ -3,14 +3,14 @@
 #include "solver.hpp"
 
 TEST_CASE("Rotate piece", "[factorial]") {
-    int piece[4] = {1, 2, 3, 4}; 
+    std::array<int, 4> piece = {1, 2, 3, 4}; 
     REQUIRE(rotate_piece(piece, 1)[0] == 4);
     REQUIRE(rotate_piece(piece, 2)[0] == 3);
 }
 
 TEST_CASE("Get next position", "[factorial]") {
     int cols = 4; 
-    int piece[4] = {1, 2, 3, 4}; 
+    std::array<int, 4> piece = {1, 2, 3, 4}; 
     int position[2] = {1, 1};
 
     int *next_position = get_next_position(cols, position);
@@ -33,18 +33,20 @@ TEST_CASE("Is move legal", "[factorial]") {
     int rows = 6; 
 
     int *grid = initialize_grid(rows, cols);
-    int piece[4] = {1, 2, 3, 4};
+    std::array<int, 4> piece = {1, 2, 3, 4}; 
     int position[2] = {0, 0};
     REQUIRE(is_move_legal(grid, piece, position, 6, 6) == false);
-    int piece_2[4] = {0, 1, 2, 0};
+    std::array<int, 4> piece_2 = {0, 1, 2, 0}; 
     REQUIRE(is_move_legal(grid, piece_2, position, 6, 6) == true);
+    std::array<int, 4> piece_3 = {0, 2, 0, 0}; 
+    REQUIRE(is_move_legal(grid, piece_3, position, 6, 6) == false);
 }
 
 TEST_CASE("Place piece on grid", "[factorial]") {
     int cols = 6; 
     int rows = 6; 
     int position[2] = {0, 0};
-    int piece[4] = {0, 2, 3, 0};
+    std::array<int, 4> piece = {0, 2, 3, 0}; 
     int *grid = initialize_grid(rows, cols);
 
     int *new_grid; 
@@ -58,4 +60,20 @@ TEST_CASE("Place piece on grid", "[factorial]") {
     REQUIRE(new_grid[0 * cols * 4 + cols * 0 + 2] == 3);
     REQUIRE(new_grid[0 * cols * 4 + cols * 0 + 3] == 0);
     REQUIRE(grid[0 * cols * 4 + cols * 0 + 3] == -1);
+}
+
+TEST_CASE("Get valid next moves", "[factorial]") {
+    int cols = 6; 
+    int rows = 6; 
+    int position[2] = {0, 0};
+    std::array<int, 4> piece = {1, 2, 0, 0}; 
+    std::vector<std::array<int, 4>> pieces;
+    pieces.push_back(piece);
+    int *grid = initialize_grid(rows, cols);
+    std::vector<std::pair<int, int>> result;
+
+    result = get_valid_next_moves(grid, pieces, position, 6, 6);
+    REQUIRE(result.size() == 1);
+    REQUIRE(result[0].first == 0);
+    REQUIRE(result[0].second == 1);
 }

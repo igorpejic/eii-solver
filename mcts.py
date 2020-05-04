@@ -30,7 +30,7 @@ class CustomMCTS():
         self.solution_pieces_order = []
         self.is_circular = is_circular
 
-    def predict(self, temp=1, N=1000):
+    def predict(self, N=1000):
         initial_state = self.state
         state = self.state
         available_pieces = state.pieces
@@ -43,7 +43,6 @@ class CustomMCTS():
         while len(state.pieces):
             piece_placed = False
             states = []
-            best_score = 0
             for j in range(0, len(state.pieces) * 4):
                 rotation = j % 4
                 piece_index = j // 4
@@ -131,7 +130,6 @@ class CustomMCTS():
             return ALL_PIECES_USED, simulation_root_state, solution_pieces_order
         grid = state.grid
         while True:
-            val = 1
             if len(state.pieces) == 0:
                 print('solution found in simulation')
                 return ALL_PIECES_USED, simulation_root_state, solution_pieces_order
