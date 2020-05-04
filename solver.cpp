@@ -16,7 +16,7 @@
 using namespace std;
 
 std::array<int, 4> rotate_piece(std::array<int, 4> piece, int orientation) {
-    std:array<int, 4> rotated_piece;
+    std::array<int, 4> rotated_piece;
     if (orientation == 0) {
         rotated_piece[0] = piece[0];
         rotated_piece[1] = piece[1];
@@ -41,8 +41,8 @@ std::array<int, 4> rotate_piece(std::array<int, 4> piece, int orientation) {
     return rotated_piece; 
 }
 
-int *get_next_position(int cols, int *prev_position) {
-    int *next_position = new int[2];
+std::array<int, 2> get_next_position(int cols, std::array<int, 2> prev_position) {
+    std::array <int, 2> next_position = {0, 0};
     next_position[0] = ((prev_position[0] * cols) + prev_position[1] + 1) / cols;
     next_position[1] = ((prev_position[0] * cols) + prev_position[1] + 1) % cols;
     return next_position;
@@ -62,7 +62,7 @@ int *initialize_grid(int rows, int cols) {
 
 
 std::vector<std::array<int, 4>> initialize_pieces(const char *filename) {
-    cout << filename;
+    std::cout << filename << std::endl;
     std::ifstream infile(filename);
     int i = 0;
     std::vector<std::array<int, 4>> pieces;
@@ -85,7 +85,7 @@ std::vector<std::array<int, 4>> initialize_pieces(const char *filename) {
     return pieces;
 }
 
-bool is_move_legal(int *grid, std::array<int, 4> piece, int *position, int rows, int cols) {
+bool is_move_legal(int *grid, std::array<int, 4> piece, std::array<int, 2> position, int rows, int cols) {
     int row = position[0];
     int col = position[1];
 
@@ -115,7 +115,7 @@ bool is_move_legal(int *grid, std::array<int, 4> piece, int *position, int rows,
     return true;
 }
 
-std::tuple<bool, int*, int*> place_piece_on_grid(int *grid, std::array<int, 4> piece, int *position, int rows, int cols) {
+std::tuple<bool, int*, std::array<int, 2>> place_piece_on_grid(int *grid, std::array<int, 4> piece, std::array<int, 2> position, int rows, int cols) {
     if (!is_move_legal(grid, piece, position, rows, cols)) {
         return std::make_tuple(false, grid, position);
     }
@@ -126,13 +126,12 @@ std::tuple<bool, int*, int*> place_piece_on_grid(int *grid, std::array<int, 4> p
     new_grid[position[0] * cols * 4 + position[1] * 4 + 1] = piece[1];
     new_grid[position[0] * cols * 4 + position[1] * 4 + 2] = piece[2];
     new_grid[position[0] * cols * 4 + position[1] * 4 + 3] = piece[3];
-    std::cout << new_grid[0];
-    int *next_position = get_next_position(cols, position);
+    std::array<int, 2> next_position = get_next_position(cols, position);
 
     return std::make_tuple(true, new_grid, next_position);
 }
 
-std::vector<std::pair<int, int>> get_valid_next_moves(int *grid, std::vector<std::array<int, 4>> pieces, int *position, int rows, int cols) {
+std::vector<std::pair<int, int>> get_valid_next_moves(int *grid, std::vector<std::array<int, 4>> pieces, std::array<int, 2> position, int rows, int cols) {
     std::vector<std::pair<int, int>> possible_moves;
     for (int i = 0; i < pieces.size(); i++) {
         for (int orientation = 0; orientation < 4; orientation++) {
