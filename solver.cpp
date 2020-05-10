@@ -48,18 +48,30 @@ std::array<int, 2> get_next_position(int cols, std::array<int, 2> prev_position)
     return next_position;
 }
 
-int *initialize_grid(int rows, int cols) {
-    int *grid = (int*)malloc(rows*cols*4*sizeof(int));
+std::vector<int> initialize_grid(int rows, int cols) {
+    std::vector<int> grid;
     for (int i=0; i < rows; i++) {
         for(int j = 0; j < cols; j++) {
             for(int k = 0; k < 4; k++) {
-                grid[i * cols * 4 + j * 4 + k] = EMPTY;
+                grid.push_back(EMPTY);
             }
         }
     }
     return grid;
 }
 
+bool print_pieces(std::vector<std::array<int, 4>> pieces) {
+    for (int i = 0; i < pieces.size(); i++) {
+        if (i % 3 == 0) {
+            std::cout << std::endl;
+        }
+        for (int j = 0; j < 4; j++) {
+            std::cout << pieces[i][j] << " ";
+        }
+        std::cout << "      ";
+    }
+    std::cout << std::endl;
+}
 
 std::vector<std::array<int, 4>> initialize_pieces(const char *filename) {
     std::cout << filename << std::endl;
@@ -67,13 +79,15 @@ std::vector<std::array<int, 4>> initialize_pieces(const char *filename) {
     int i = 0;
     std::vector<std::array<int, 4>> pieces;
     int top, right, down, left;
-    int n_pieces;
+    int n_pieces = -1;
     int pieces_index = 0;
 
     for ( std::string line; getline( infile, line ); ) {
         if (i == 0) {
             sscanf(line.c_str(), "%i", &n_pieces);
             n_pieces *= n_pieces;
+        } else if(n_pieces != -1 && i - 2 > n_pieces) {
+            break;
         } else if (i> 2) {
             sscanf(line.c_str(), "%d %d %d %d", &top, &right, &down, &left);
             std::array<int, 4> piece = {top, right, down, left};
@@ -82,10 +96,14 @@ std::vector<std::array<int, 4>> initialize_pieces(const char *filename) {
         }
         i++;
     }
+    std::cout << "Pieces length: " << pieces.size() << std::endl;
+    print_pieces(pieces);
     return pieces;
 }
 
-bool is_move_legal(int *grid, std::array<int, 4> piece, std::array<int, 2> position, int rows, int cols) {
+
+
+bool is_move_legal(std::vector<int> grid, std::array<int, 4> piece, std::array<int, 2> position, int rows, int cols) {
     int row = position[0];
     int col = position[1];
 
@@ -115,12 +133,12 @@ bool is_move_legal(int *grid, std::array<int, 4> piece, std::array<int, 2> posit
     return true;
 }
 
-std::tuple<bool, int*, std::array<int, 2>> place_piece_on_grid(int *grid, std::array<int, 4> piece, std::array<int, 2> position, int rows, int cols) {
+std::tuple<bool, std::vector<int>, std::array<int, 2>> place_piece_on_grid(std::vector<int> grid, std::array<int, 4> piece, std::array<int, 2> position, int rows, int cols) {
     if (!is_move_legal(grid, piece, position, rows, cols)) {
         return std::make_tuple(false, grid, position);
     }
-    int *new_grid = (int*)malloc(sizeof(int) * rows * cols * 4);
-    memcpy(new_grid, grid, sizeof(int) * rows * cols * 4);
+    vector<int> new_grid;
+    new_grid = grid;
 
     new_grid[position[0] * cols * 4 + position[1] * 4 + 0] = piece[0];
     new_grid[position[0] * cols * 4 + position[1] * 4 + 1] = piece[1];
@@ -131,7 +149,7 @@ std::tuple<bool, int*, std::array<int, 2>> place_piece_on_grid(int *grid, std::a
     return std::make_tuple(true, new_grid, next_position);
 }
 
-std::vector<std::pair<int, int>> get_valid_next_moves(int *grid, std::vector<std::array<int, 4>> pieces, std::array<int, 2> position, int rows, int cols) {
+std::vector<std::pair<int, int>> get_valid_next_moves(std::vector<int> grid, std::vector<std::array<int, 4>> pieces, std::array<int, 2> position, int rows, int cols) {
     std::vector<std::pair<int, int>> possible_moves;
     for (int i = 0; i < pieces.size(); i++) {
         for (int orientation = 0; orientation < 4; orientation++) {

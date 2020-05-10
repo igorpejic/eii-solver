@@ -7,7 +7,7 @@ struct state_t {
     std::vector<std::array<int, 4>> m_pieces;        
     std::array<int, 4> m_previous_piece;        
     std::array<int, 4> m_piece_placed;        
-    int *m_grid;        
+    std::vector<int> m_grid;        
     std::vector<state_t> m_children;
     float m_score;
     std::array<int, 2> m_next_position;
@@ -16,7 +16,7 @@ struct state_t {
 class CustomMCTS {       
   public:             
     int n_pieces_placed = 0;        
-    int *m_initial_grid;
+    std::vector<int> m_initial_grid;
     int m_rows;
     int m_cols;
     int m_pieces_placed = 0;
@@ -34,5 +34,5 @@ class CustomMCTS {
 };
 
 int get_max_index(std::vector<state_t> states);
-void print_grid(int *grid, int rows, int cols);
-void print_pieces(std::vector<std::array<int, 4>> m_pieces);
+void print_grid(std::vector<int> grid, int rows, int cols);
+//void print_pieces(std::vector<std::array<int, 4>> m_pieces);

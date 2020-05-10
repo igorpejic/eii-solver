@@ -53,6 +53,9 @@ def initialize_pieces(n_pieces=4, puzzles_format=PYTHON_FORMAT, filename=None):
                 elif i ==1 or i == 2:
                     # number of colors
                     continue
+                elif grid_size is not None and (i - 2 > grid_size * grid_size):
+                    print(grid_size, i, 'aaa')
+                    break
                 else:
                     piece = [int(x) for x in line.strip().split("  ")]
                     pieces.append(

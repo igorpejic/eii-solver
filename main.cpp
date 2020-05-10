@@ -25,13 +25,11 @@ void print_solution(std::vector<std::pair<std::array<int, 4>, std::array<int, 2>
 }
 
 int main (int argc, const char* argv[]) {
-    // insert code here...
-    std::cout << "Hello, World!\n";
     std::vector<std::array<int, 4>> pieces = initialize_pieces(argv[1]);
     int rows = sqrt(pieces.size());
-    CustomMCTS mcts(initialize_pieces(argv[1]), rows, rows, MAX_DEPTH);
+    CustomMCTS mcts(initialize_pieces(argv[1]), rows, rows, AVG_DEPTH);
     tuple<state_t, int, bool> result;
-    result = mcts.predict(10000);
+    result = mcts.predict(1000);
     cout << "In total placed tiles:" << mcts.m_pieces_placed << std::endl;
     cout << "Pieces placed:" << mcts.m_solution_pieces_order.size() << std::endl;
     if (mcts.m_solution_pieces_order.size() == rows * rows) {

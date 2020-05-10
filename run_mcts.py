@@ -12,18 +12,20 @@ def main():
                         const=sum, default=max,
                         help='sum the integers (default: find the max)')
     args = parser.parse_args()
-    puzzles_format = JAVA_FORMAT
-    filename = 'editor_puzzles/5x5x4.txt'
+    #puzzles_format = JAVA_FORMAT
+    #filename = 'editor_puzzles/5x5x4.txt'
 
     # puzzles_format = BENOIST_FORMAT
-    # puzzles_format = VANSTONE_FORMAT
     # filename = 'bvanston_puzzles/E2BenchmarkWithoutHints/E_7_1.b6i6.nohint.txt'
-    #filename = 'bvanston_puzzles/Data6_2_6/RandPuzzle06x06_100.txt'
+
+    puzzles_format = VANSTONE_FORMAT
+    filename = 'puzzles_set/RandPuzzle4x4_01.txt'
     pieces, grid_size = initialize_pieces(
         puzzles_format=puzzles_format, 
         filename=filename
     )   
     n_pieces = len(pieces)
+    print(f"pieces length: {n_pieces}")
 
     if not grid_size:
         grid_size = int(math.sqrt(n_pieces))
@@ -31,7 +33,7 @@ def main():
     grid = initialize_grid(grid_size, grid_size)
     print(pieces_to_editor_format(pieces))
 
-    mcts = CustomMCTS(pieces, grid, strategy='max_depth', is_circular=False)
+    mcts = CustomMCTS(pieces, grid, strategy='avg_depth', is_circular=False)
     state, depth, solution_found = mcts.predict(N=1000)
     print(f'\n{solution_found}. Final solution pieces placed: {len(mcts.solution_pieces_order)} Depth: {depth}. Total search pieces placed: {mcts.n_pieces_placed}')
     print(mcts.solution_pieces_order)

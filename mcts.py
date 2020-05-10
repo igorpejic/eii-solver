@@ -113,6 +113,7 @@ class CustomMCTS():
             _max = np.max(np.array(depths))
         elif self.strategy == 'avg_depth':
             _max = np.average(np.array(depths))
+        print(_max)
         return _max, None
 
 
