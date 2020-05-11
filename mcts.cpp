@@ -38,8 +38,8 @@ std::tuple<state_t, int, bool>CustomMCTS::predict(int N=1000) {
     std::array<int, 2> next_position = {0, 0};
 
     std::vector<std::pair<std::array<int, 4>, std::array<int, 2>>> solution_pieces_order;
-    //srand(time(NULL));
-    srand(2);
+    srand(time(NULL));
+    //srand(2);
 
     while (state.m_pieces.size()) {
         int piece_placed = false;
@@ -63,7 +63,7 @@ std::tuple<state_t, int, bool>CustomMCTS::predict(int N=1000) {
                 //cannot place piece. this branch will not be considered
                 continue;
             } else {
-                cout << "success" << endl;
+                //cout << "success" << endl;
                 //cout << piece[0] << piece[1] << piece[2] << piece[3] << std::endl;
                 //std::cout << "success" << piece[0] << piece[1] << piece[2] << piece[3] << std::endl;
                 //std::cout << "piece" << state.m_pieces[piece_index][0] << state.m_pieces[piece_index][1] << state.m_pieces[piece_index][2] << state.m_pieces[piece_index][3] << std::endl;
@@ -102,7 +102,7 @@ std::tuple<state_t, int, bool>CustomMCTS::predict(int N=1000) {
                     solution_found = true;
                     return std::make_tuple(*initial_state, depth, solution_found);
                 } else {
-                    std::cout << simulation_depth << std::endl;
+                    //std::cout << simulation_depth << std::endl;
                     new_state.m_score = simulation_depth;
                     new_state.m_next_position = potential_next_position;
                     new_state.m_previous_piece = piece;
