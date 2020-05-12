@@ -51,7 +51,7 @@ int main (int argc, const char* argv[]) {
 
                     std::ofstream outfile;
 
-                    outfile.open("results.csv", std::ofstream::app);
+                    outfile.open("results2.csv", std::ofstream::app);
                     std::time_t timestamp = std::time(nullptr);
                     outfile << std::put_time(std::localtime(&timestamp), "%y-%m-%d %OH:%OM:%OS") << ";";
                     outfile << argv[1] << ";";

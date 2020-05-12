@@ -38,8 +38,8 @@ std::tuple<state_t, int, bool>CustomMCTS::predict(int N=1000) {
     std::array<int, 2> next_position = {0, 0};
 
     std::vector<std::pair<std::array<int, 4>, std::array<int, 2>>> solution_pieces_order;
-    srand(time(NULL));
-    //srand(2);
+    //srand(time(NULL));
+    srand(2);
 
     while (state.m_pieces.size()) {
         int piece_placed = false;
