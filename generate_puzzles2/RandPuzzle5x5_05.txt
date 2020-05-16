@@ -1,0 +1,39 @@
+ 5          puzzle size (rows and columns)
+ 3   4      # border colours  # inside colours
+Top Rgt Bot Lft
+ 0  3  3  0
+ 0  3  1  0
+ 0  1  2  0
+ 0  2  2  0
+ 0  2  4  3
+ 0  3  7  2
+ 0  1  7  1
+ 0  2  5  2
+ 0  1  7  2
+ 0  2  6  1
+ 0  3  5  1
+ 0  1  7  3
+ 0  2  6  2
+ 0  2  5  1
+ 0  3  4  3
+ 0  1  6  3
+ 6  5  6  4
+ 6  4  4  7
+ 4  6  5  7
+ 6  7  7  6
+ 5  6  6  5
+ 5  4  4  7
+ 4  5  7  4
+ 7  4  5  6
+ 7  4  5  5
+2x2 solution sets
+  0 0 3 0   2  16   7  18
+  0 1 0 1   6   1  25  15
+  3 0 3 2  11  21   3  13
+  0 1 2 2  23   8   9   4
+One single tile solution to this puzzle - there may be more
+   2  16  10   6   1
+   7  18  17  25  15
+  12  19  20  22   5
+  11  21  24  23   8
+   3  13  14   9   4

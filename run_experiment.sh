@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for filename in puzzles_set2/RandPuzzle*; do
+for filename in generate_puzzles2/RandPuzzle*; do
     echo $filename
     ./a.out $filename
 done

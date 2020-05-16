@@ -39,30 +39,30 @@ int main (int argc, const char* argv[]) {
     strategies[AVG_DEPTH] = "avgDepth";
     for (auto nRollouts : nRolloutsChoices) {
         for ( const auto &[strategy, value]: strategies ) {
-                for (int i = 0; i < SIMULATION_REPEATS; i++) {
-                    CustomMCTS mcts(initialize_pieces(argv[1]), rows, rows, strategy);
-                    tuple<state_t, int, bool> result;
-                    result = mcts.predict(nRollouts);
-                    cout << "In total placed tiles:" << mcts.m_pieces_placed << std::endl;
-                    cout << "Pieces placed:" << mcts.m_solution_pieces_order.size() << std::endl;
-                    if (mcts.m_solution_pieces_order.size() == rows * rows) {
-                        print_solution(mcts.m_solution_pieces_order, rows);
-                    }
-
-                    std::ofstream outfile;
-
-                    outfile.open("results2.csv", std::ofstream::app);
-                    std::time_t timestamp = std::time(nullptr);
-                    outfile << std::put_time(std::localtime(&timestamp), "%y-%m-%d %OH:%OM:%OS") << ";";
-                    outfile << argv[1] << ";";
-                    outfile << rows << ";";
-                    outfile << strategies[strategy] << ";";
-                    outfile << nRollouts << ";";
-                    outfile << mcts.m_pieces_placed << ";";
-                    outfile << std::get<2>(result) << ";";
-                    outfile << std::get<1>(result) << ";";
-                    outfile << std::endl;
+                //for (int i = 0; i < SIMULATION_REPEATS; i++) {
+                CustomMCTS mcts(initialize_pieces(argv[1]), rows, rows, strategy);
+                tuple<state_t, int, bool> result;
+                result = mcts.predict(nRollouts);
+                cout << "In total placed tiles:" << mcts.m_pieces_placed << std::endl;
+                cout << "Pieces placed:" << mcts.m_solution_pieces_order.size() << std::endl;
+                if (mcts.m_solution_pieces_order.size() == rows * rows) {
+                    print_solution(mcts.m_solution_pieces_order, rows);
                 }
+
+                std::ofstream outfile;
+
+                outfile.open("results2.csv", std::ofstream::app);
+                std::time_t timestamp = std::time(nullptr);
+                outfile << std::put_time(std::localtime(&timestamp), "%y-%m-%d %OH:%OM:%OS") << ";";
+                outfile << argv[1] << ";";
+                outfile << rows << ";";
+                outfile << strategies[strategy] << ";";
+                outfile << nRollouts << ";";
+                outfile << mcts.m_pieces_placed << ";";
+                outfile << std::get<2>(result) << ";";
+                outfile << std::get<1>(result) << ";";
+                outfile << std::endl;
+                //}
         }
     }
     return 0;
