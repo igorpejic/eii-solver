@@ -42,9 +42,11 @@ int main (int argc, const char* argv[]) {
     placed_pieces placed_pieces(pieces_b.size(), 0);  
     board board = initialize_board_b(rows, rows);
 
+    neighbours_map_t neighbours_map = get_possible_neighbours_map(pieces_b, rotated_pieces);
+
     int tiles_placed = 0;
     bool solution_found = false;
-    backtrack(pieces_b, placed_pieces, rotated_pieces, board, position, rows, &tiles_placed, &solution_found);
+    backtrack(pieces_b, placed_pieces, rotated_pieces, neighbours_map, board, position, rows, &tiles_placed, &solution_found);
 
     std::cout << "tiles_placed: " << tiles_placed << std::endl;
 
