@@ -1,3 +1,6 @@
+#include <iostream>
+#include <iomanip>
+#include <cmath>
 #include <cstdlib>
 #include <utility>      // std::pair, std::make_pair
 #include <tuple>
@@ -6,6 +9,7 @@
 #include <vector>
 #include <iostream>
 #include <array>
+#include "solver.hpp"
 
 #define NORTH 0
 #define EAST 1
@@ -41,10 +45,43 @@ std::array<int, 4> rotate_piece(std::array<int, 4> piece, int orientation) {
     return rotated_piece; 
 }
 
+Piece rotate_piece_b(Piece piece, int orientation) {
+    Piece rotated_piece;
+    if (orientation == 0) {
+        rotated_piece.top = piece.top;
+        rotated_piece.right = piece.right;
+        rotated_piece.bottom = piece.bottom;
+        rotated_piece.left = piece.left;
+    } else if (orientation == 1) {
+        rotated_piece.top = piece.left;
+        rotated_piece.right = piece.top;
+        rotated_piece.bottom = piece.right;
+        rotated_piece.left = piece.bottom;
+    } else if (orientation == 2) {
+        rotated_piece.top = piece.bottom;
+        rotated_piece.right = piece.left;
+        rotated_piece.bottom = piece.top;
+        rotated_piece.left = piece.right;
+    } else if (orientation == 3) {
+        rotated_piece.top = piece.right;
+        rotated_piece.right = piece.bottom;
+        rotated_piece.bottom = piece.left;
+        rotated_piece.left = piece.top;
+    }
+    return rotated_piece; 
+}
+
 std::array<int, 2> get_next_position(int cols, std::array<int, 2> prev_position) {
     std::array <int, 2> next_position = {0, 0};
     next_position[0] = ((prev_position[0] * cols) + prev_position[1] + 1) / cols;
     next_position[1] = ((prev_position[0] * cols) + prev_position[1] + 1) % cols;
+    return next_position;
+}
+
+Position get_next_position_b(int cols, Position prev_position) {
+    Position next_position = {0, 0};
+    next_position.i = ((prev_position.i * cols) + prev_position.j + 1) / cols;
+    next_position.j = ((prev_position.i * cols) + prev_position.j + 1) % cols;
     return next_position;
 }
 
@@ -73,12 +110,52 @@ bool print_pieces(std::vector<std::array<int, 4>> pieces) {
     std::cout << std::endl;
 }
 
+void print_pieces_b(pieces pieces) {
+    int rows = sqrt(pieces.size());
+    for (int i = 0; i < pieces.size(); i++) {
+        if (i % rows == 0) {
+            std::cout << std::endl;
+        }
+        std::cout << pieces[i].top << " ";
+        std::cout << pieces[i].right << " ";
+        std::cout << pieces[i].bottom << " ";
+        std::cout << pieces[i].left << " ";
+        std::cout << "      ";
+    }
+    std::cout << std::endl;
+}
+
+void print_pieces_louis_format(board &board, pieces &pieces) {
+    int rows = sqrt(pieces.size());
+    for (int i = 0; i < board.size(); i++) {
+        if (i % rows == 0 && i !=0) {
+            std::cout << std::endl;
+        }
+        Piece board_piece = board[i];
+        bool match_found = false;
+        for (int j = 0; j < pieces.size(); j++) {
+            if (match_found) {
+                break;
+            }
+            for (int orientation = 0; orientation < 4; orientation++) {
+                Piece rotated_piece = rotate_piece_b(pieces[j], orientation);
+                if (rotated_piece == board_piece) {
+                    match_found = true;
+                    std::cout << std::setw(5) << j << "/" << orientation;
+                    //std::cout << "     ";
+                }
+            }
+        }
+    }
+    std::cout << std::endl;
+}
+
 std::vector<std::array<int, 4>> initialize_pieces(const char *filename) {
     std::cout << filename << std::endl;
     std::ifstream infile(filename);
     int i = 0;
     std::vector<std::array<int, 4>> pieces;
-    int top, right, down, left;
+    int top, right, bottom, left;
     int n_pieces = -1;
     int pieces_index = 0;
 
@@ -89,8 +166,8 @@ std::vector<std::array<int, 4>> initialize_pieces(const char *filename) {
         } else if(n_pieces != -1 && i - 2 > n_pieces) {
             break;
         } else if (i> 2) {
-            sscanf(line.c_str(), "%d %d %d %d", &top, &right, &down, &left);
-            std::array<int, 4> piece = {top, right, down, left};
+            sscanf(line.c_str(), "%d %d %d %d", &top, &right, &bottom, &left);
+            std::array<int, 4> piece = {top, right, bottom, left};
             pieces.push_back(piece);
             pieces_index++;
         }
@@ -98,6 +175,35 @@ std::vector<std::array<int, 4>> initialize_pieces(const char *filename) {
     }
     std::cout << "Pieces length: " << pieces.size() << std::endl;
     print_pieces(pieces);
+    return pieces;
+}
+
+
+pieces initialize_pieces_backtracker(const char *filename) {
+    std::cout << filename << std::endl;
+    std::ifstream infile(filename);
+    int i = 0;
+    pieces pieces;
+    int top, right, bottom, left;
+    int n_pieces = -1;
+    int pieces_index = 0;
+
+    for ( std::string line; getline( infile, line ); ) {
+        if (i == 0) {
+            sscanf(line.c_str(), "%i", &n_pieces);
+            n_pieces *= n_pieces;
+        } else if(n_pieces != -1 && i - 2 > n_pieces) {
+            break;
+        } else if (i> 2) {
+            sscanf(line.c_str(), "%d %d %d %d", &top, &right, &bottom, &left);
+            Piece piece = {top, right, bottom, left};
+            pieces.push_back(piece);
+            pieces_index++;
+        }
+        i++;
+    }
+    std::cout << "Pieces length: " << pieces.size() << std::endl;
+    print_pieces_b(pieces);
     return pieces;
 }
 
@@ -133,6 +239,39 @@ bool is_move_legal(std::vector<int> grid, std::array<int, 4> piece, std::array<i
     return true;
 }
 
+bool is_move_legal_b(board &board, Piece piece, Position &position, int rows, int cols) {
+    int row = position.i;
+    int col = position.j;
+    //cout << piece.top << piece.right << piece.bottom << piece.left << std::endl;
+    //cout << row << col << std::endl;
+    //cout << board[(row +1) * cols + col].top << std::endl;
+
+    if (
+        // tiles at border with non-matching borders
+        (position.i == 0 && piece.top != GRAY) ||
+        (position.i == rows - 1 && piece.bottom != GRAY) ||
+        (position.j == 0 && piece.left != GRAY) ||
+        (position.j == cols - 1 && piece.right != GRAY) || 
+
+        // border tiles in center
+        (position.i != 0 && piece.top == GRAY) ||
+        (position.i != rows -1 && piece.bottom == GRAY) ||
+        (position.j != 0 && piece.left == GRAY) ||
+        (position.j != cols -1 && piece.right == GRAY)
+    ) {
+        return false;
+    } else if (
+        (row > 0 && piece.top != board[(row - 1) * cols + col].bottom && board[(row - 1) * cols + col].bottom != EMPTY) || 
+        (row < rows -1 && piece.bottom != board[(row + 1) * cols + col].top && board[(row + 1) * cols + col].top != EMPTY) ||
+        (col > 0 && piece.left != board[row * cols + (col - 1)].right && board[row * cols + (col - 1)].right != EMPTY) ||
+        (col < cols - 1 && piece.right != board[row * cols + (col + 1)].left && board[row * cols + (col + 1)].left != EMPTY)
+    ) {
+        return false;
+    }
+
+    return true;
+}
+
 std::tuple<bool, std::vector<int>, std::array<int, 2>> place_piece_on_grid(std::vector<int> grid, std::array<int, 4> piece, std::array<int, 2> position, int rows, int cols) {
     if (!is_move_legal(grid, piece, position, rows, cols)) {
         return std::make_tuple(false, grid, position);
@@ -159,4 +298,69 @@ std::vector<std::pair<int, int>> get_valid_next_moves(std::vector<int> grid, std
         }
     }
     return possible_moves;
+}
+
+std::vector<PiecePlacement> get_valid_next_moves_b(board board, placed_pieces &placed_pieces, pieces pieces, Position position,  int rows, int cols) {
+    std::vector<PiecePlacement> possible_moves;
+    for (int i = 0; i < pieces.size(); i++) {
+        for (int orientation = 0; orientation < 4; orientation++) {
+            if(!placed_pieces[i] && is_move_legal_b(board, rotate_piece_b(pieces[i], orientation), position, rows, cols)) {
+                PiecePlacement placement;
+                placement.index = i;
+                placement.rotation = orientation;
+                possible_moves.push_back(placement);
+            }
+        }
+    }
+    return possible_moves;
+}
+
+
+board initialize_board_b(int rows, int cols) {
+    board board;
+    for (int i=0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
+            Piece piece;
+            piece.top = EMPTY;
+            piece.right = EMPTY;
+            piece.bottom = EMPTY;
+            piece.left = EMPTY;
+            board.push_back(piece);
+        }
+    }
+    return board;
+}
+
+void print_board_b(board board, int rows, int cols) {
+    for (int line = 0; line < rows; line++) {
+        int matrix_row = line;
+        for (int col = 0; col < cols; col++) {
+            std::cout<< "\\" << std::setw(2) << board[matrix_row * cols  + col ].top << " /" << "|";
+        }
+        std::cout<< std::endl;
+
+        for (int col = 0; col < cols; col++) {
+            std::cout<< std::setw(2) << board[matrix_row * cols  + col].left  << "X" << std::setw(2) << board[matrix_row * cols  + col].right << "|";
+        }
+        std::cout<< std::endl;
+
+        for (int col = 0; col < cols; col++) {
+            std::cout<< "/" << std::setw(2) << board[matrix_row * cols  + col].bottom << " \\" << "|";
+        }
+        std::cout<< std::endl;
+        for (int col = 0; col < cols; col++) {
+            std::cout<< "------";
+        }
+        std::cout<< std::endl;
+    }
+    std::cout<< "\n" << std::endl;
+}
+
+
+bool operator==(Piece& one, Piece& other) {
+    return (
+            one.top == other.top &&
+            one.right == other.right &&
+            one.bottom == other.bottom &&
+            one.left == other.left) ;
 }

@@ -102,7 +102,7 @@ std::tuple<state_t, int, bool>CustomMCTS::predict(int N=1000) {
                     solution_found = true;
                     return std::make_tuple(*initial_state, depth, solution_found);
                 } else {
-                    //std::cout << simulation_depth << std::endl;
+                    std::cout << simulation_depth << std::endl;
                     new_state.m_score = simulation_depth;
                     new_state.m_next_position = potential_next_position;
                     new_state.m_previous_piece = piece;
