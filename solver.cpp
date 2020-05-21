@@ -300,11 +300,11 @@ std::vector<std::pair<int, int>> get_valid_next_moves(std::vector<int> grid, std
     return possible_moves;
 }
 
-std::vector<PiecePlacement> get_valid_next_moves_b(board board, placed_pieces &placed_pieces, pieces pieces, Position position,  int rows, int cols) {
+std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &placed_pieces, pieces &pieces, Position &position, Piece** rotated_pieces,  int rows, int cols) {
     std::vector<PiecePlacement> possible_moves;
     for (int i = 0; i < pieces.size(); i++) {
         for (int orientation = 0; orientation < 4; orientation++) {
-            if(!placed_pieces[i] && is_move_legal_b(board, rotate_piece_b(pieces[i], orientation), position, rows, cols)) {
+            if(!placed_pieces[i] && is_move_legal_b(board, rotated_pieces[i][orientation], position, rows, cols)) {
                 PiecePlacement placement;
                 placement.index = i;
                 placement.rotation = orientation;
@@ -363,4 +363,24 @@ bool operator==(Piece& one, Piece& other) {
             one.right == other.right &&
             one.bottom == other.bottom &&
             one.left == other.left) ;
+}
+
+Piece **get_rotated_pieces_b(pieces pieces) {
+    int rows = pieces.size();
+    Piece **rotated_pieces = (Piece**)malloc(sizeof(Piece*) * rows +  sizeof(Piece) * rows * 4);
+
+    Piece *ptr;
+
+    ptr = (Piece*)(rotated_pieces + rows);
+
+    for(int i = 0; i < rows; i++) {
+        rotated_pieces[i] = (ptr + 4 * i);
+    }
+
+    for (int i = 0; i < pieces.size(); i++) {
+        for (int j = 0; j < 4; j++) {
+            rotated_pieces[i][j] = rotate_piece_b(pieces[i], j);
+        }
+    }
+    return rotated_pieces;
 }

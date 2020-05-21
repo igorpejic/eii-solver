@@ -46,9 +46,11 @@ typedef std::vector<int> placed_pieces;
 
 bool is_move_legal_b(board &board, Piece piece, Position &position, int rows, int cols);
 Position get_next_position_b(int cols, Position prev_position);
-std::vector<PiecePlacement> get_valid_next_moves_b(board board, placed_pieces &placed_pieces, pieces pieces, Position position,  int rows, int cols);
+std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &placed_pieces, pieces &pieces, Position &position, Piece** rotated_pieces,  int rows, int cols);
 
 void print_pieces_b(board board);
 void print_board_b(board board, int rows, int cols);
 
 void print_pieces_louis_format(board &board, pieces &pieces);
+
+Piece **get_rotated_pieces_b(pieces pieces);

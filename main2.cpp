@@ -36,12 +36,15 @@ int main (int argc, const char* argv[]) {
     int rows = sqrt(pieces_b.size());
     Position position = {0, 0};
 
+    // holding rotated pieces to speed up computation; read only
+    Piece **rotated_pieces = get_rotated_pieces_b(pieces_b);
+
     placed_pieces placed_pieces(pieces_b.size(), 0);  
     board board = initialize_board_b(rows, rows);
 
     int tiles_placed = 0;
     bool solution_found = false;
-    backtrack(pieces_b, placed_pieces, board, position, rows, &tiles_placed, &solution_found);
+    backtrack(pieces_b, placed_pieces, rotated_pieces, board, position, rows, &tiles_placed, &solution_found);
 
     std::cout << "tiles_placed: " << tiles_placed << std::endl;
 
