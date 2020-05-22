@@ -7,6 +7,7 @@
 #include <map>
 #include <tuple>
 #include <cmath>
+#include <chrono>
 #include "mcts.hpp"
 #include "backtracker.hpp"
 #define MAX_DEPTH 100
@@ -47,8 +48,15 @@ int main (int argc, const char* argv[]) {
 
     int tiles_placed = 0;
     bool solution_found = false;
-    backtrack(pieces_b, placed_pieces, rotated_pieces, neighbours_map, board, position, rows, &tiles_placed, &solution_found);
+    auto start = std::chrono::high_resolution_clock::now();
+    backtrack(pieces_b, placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &solution_found);
 
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    std::cout << "duration: " << duration / 1000.0 << "s" << std::endl;
+    if (duration) {
+        std::cout << "placements/s: " << tiles_placed / (duration / 1000.0) << std::endl;
+    }
     std::cout << "tiles_placed: " << tiles_placed << std::endl;
 
     return 0;

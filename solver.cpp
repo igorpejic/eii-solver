@@ -279,7 +279,7 @@ std::vector<std::pair<int, int>> get_valid_next_moves(std::vector<int> grid, std
     return possible_moves;
 }
 
-std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &placed_pieces, pieces &pieces, neighbours_map_t &neighbours_map, Position &position, Piece** rotated_pieces,  int rows, int cols) {
+std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &placed_pieces, pieces &pieces, neighbours_map_t &neighbours_map, Position &position, Piece** rotated_pieces) {
     std::vector<PiecePlacement> possible_moves;
 
     //reserve memory; no speedup
@@ -302,7 +302,7 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
             }
         }
     } else if(position.i == 0) {
-        PiecePlacement piece_on_left = board[row * cols + (col - 1)];
+        PiecePlacement piece_on_left = board[row * PUZZLE_SIZE + (col - 1)];
         std::vector<PiecePlacement> &possible_piece_placements_left = neighbours_map[get_piece_hash(
                 piece_on_left.index, piece_on_left.orientation, RIGHT)];
         for (const auto& elem: possible_piece_placements_left) {
@@ -312,7 +312,7 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
             possible_moves.push_back(elem);
         }
     } else if(position.j == 0) {
-        PiecePlacement piece_on_top = board[(row - 1) * cols + col];
+        PiecePlacement piece_on_top = board[(row - 1) * PUZZLE_SIZE + col];
         std::vector<PiecePlacement> &possible_piece_placements_top = neighbours_map[get_piece_hash(
                 piece_on_top.index, piece_on_top.orientation, BOTTOM)];
         for (const auto& elem: possible_piece_placements_top) {
@@ -322,12 +322,13 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
             possible_moves.push_back(elem);
         }
     } else {
-        PiecePlacement piece_on_top = board[(row - 1) * cols + col];
-        PiecePlacement piece_on_left = board[row * cols + (col - 1)];
+        PiecePlacement piece_on_top = board[(row - 1) * PUZZLE_SIZE + col];
+        PiecePlacement piece_on_left = board[row * PUZZLE_SIZE + (col - 1)];
 
         std::vector<PiecePlacement> *possible_piece_placements;
 
         uint_fast8_t neighbour_with_less_choices;
+
         if (neighbours_map[get_piece_hash(piece_on_top.index, piece_on_top.orientation, BOTTOM)].size() < neighbours_map[get_piece_hash(piece_on_left.index, piece_on_left.orientation, RIGHT)].size()) {
             possible_piece_placements = &neighbours_map[get_piece_hash(piece_on_top.index, piece_on_top.orientation, BOTTOM)];
             neighbour_with_less_choices =  NEIGHBOUR_TOP;
@@ -336,6 +337,9 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
             neighbour_with_less_choices =  NEIGHBOUR_LEFT;
         }
 
+        //std::cout << neighbours_map[get_piece_hash(piece_on_left.index, piece_on_left.orientation, RIGHT)].size() << "_";
+        //std::cout << neighbours_map[get_piece_hash(piece_on_top.index, piece_on_top.orientation, BOTTOM)].size() << "rr ";
+        //std::cout << possible_piece_placementssize() << "dddddddd" << std::endl;
         //std::cout << row << ":" << col << std::endl;
         //std::cout << possible_piece_placements_top.size() << std::endl;
 
@@ -345,10 +349,10 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
                 continue;
             }
 
-            if (position.i == (rows - 1)  && rotated_pieces[elem.index][elem.orientation].bottom != GRAY) {
+            if (position.i == (PUZZLE_SIZE - 1)  && rotated_pieces[elem.index][elem.orientation].bottom != GRAY) {
                 continue;
             }
-            if (position.j == (cols - 1)  && rotated_pieces[elem.index][elem.orientation].right != GRAY) {
+            if (position.j == (PUZZLE_SIZE - 1)  && rotated_pieces[elem.index][elem.orientation].right != GRAY) {
                 continue;
             }
             if (neighbour_with_less_choices == NEIGHBOUR_TOP) {

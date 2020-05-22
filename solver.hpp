@@ -6,7 +6,6 @@
 #include <bitset>
 #include <unordered_map>
 
-#define PLACED_PIECES_BITSET_SIZE 256 
 
 void print_pieces(std::vector<std::array<int, 4>> pieces);
 std::array<int, 4> rotate_piece(std::array<int, 4> piece, int orientation);
@@ -47,17 +46,17 @@ int pieceHasher(const PiecePlacement &p);
 
 typedef std::vector<Piece> pieces;
 typedef std::vector<PiecePlacement> board;
-typedef std::unordered_map<int, std::vector<PiecePlacement>> neighbours_map_t;
+typedef std::array<std::vector<PiecePlacement>, PUZZLE_SIZE * PUZZLE_SIZE * 4 * 4> neighbours_map_t;
 
 
 pieces initialize_pieces_backtracker(const char *filename);
 board initialize_board_b(int rows, int cols);
 Piece rotate_piece_b(Piece piece, int orientation);
-typedef std::bitset<PLACED_PIECES_BITSET_SIZE> placed_pieces;
+typedef std::bitset<PUZZLE_SIZE * PUZZLE_SIZE> placed_pieces;
 
 Position get_next_position_b(int cols, Position prev_position);
 
-std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &placed_pieces, pieces &pieces, neighbours_map_t &neighbours_map_t,  Position &position, Piece** rotated_pieces,  int rows, int cols);
+std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &placed_pieces, pieces &pieces, neighbours_map_t &neighbours_map_t,  Position &position, Piece** rotated_pieces);
 
 void print_board_editor_b(board board, Piece ** rotated_pieces);
 void print_board_b(board board, Piece** rotated_pieces, int rows, int cols);
