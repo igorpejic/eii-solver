@@ -13,7 +13,6 @@
 #define AVG_DEPTH 101
 #define SIMULATION_REPEATS 5
 
-
 using namespace std;
 
 void print_solution(std::vector<std::pair<std::array<int, 4>, std::array<int, 2>>> solution_pieces_order, int rows);
@@ -39,7 +38,9 @@ int main (int argc, const char* argv[]) {
     // holding rotated pieces to speed up computation; read only
     Piece **rotated_pieces = get_rotated_pieces_b(pieces_b);
 
-    placed_pieces placed_pieces(pieces_b.size(), 0);  
+    //placed_pieces placed_pieces(pieces_b.size(), false);  
+    placed_pieces placed_pieces;  
+
     board board = initialize_board_b(rows, rows);
 
     neighbours_map_t neighbours_map = get_possible_neighbours_map(pieces_b, rotated_pieces);

@@ -34,7 +34,7 @@ void backtrack(pieces &pieces, placed_pieces _placed_pieces, Piece** rotated_pie
         board[position.i * rows + position.j] = piece_placement;
         placed_pieces new_placed_pieces;
         new_placed_pieces = _placed_pieces;
-        new_placed_pieces[next_moves[i].index] = 1;
+        new_placed_pieces[next_moves[i].index] = true;
         (*tiles_placed)++;
         Position next_position = get_next_position_b(rows, position);
 

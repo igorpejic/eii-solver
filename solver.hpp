@@ -3,7 +3,10 @@
 #include <utility>      // std::pair, std::make_pair
 #include <tuple>
 #include <unordered_set>
+#include <bitset>
 #include <unordered_map>
+
+#define PLACED_PIECES_BITSET_SIZE 256 
 
 void print_pieces(std::vector<std::array<int, 4>> pieces);
 std::array<int, 4> rotate_piece(std::array<int, 4> piece, int orientation);
@@ -50,7 +53,7 @@ typedef std::unordered_map<int, std::vector<PiecePlacement>> neighbours_map_t;
 pieces initialize_pieces_backtracker(const char *filename);
 board initialize_board_b(int rows, int cols);
 Piece rotate_piece_b(Piece piece, int orientation);
-typedef std::vector<int> placed_pieces;
+typedef std::bitset<PLACED_PIECES_BITSET_SIZE> placed_pieces;
 
 Position get_next_position_b(int cols, Position prev_position);
 

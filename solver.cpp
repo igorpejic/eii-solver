@@ -279,6 +279,9 @@ std::vector<std::pair<int, int>> get_valid_next_moves(std::vector<int> grid, std
 std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &placed_pieces, pieces &pieces, neighbours_map_t &neighbours_map, Position &position, Piece** rotated_pieces,  int rows, int cols) {
     std::vector<PiecePlacement> possible_moves;
 
+    //reserve memory; no speedup
+    //possible_moves.reserve(10);
+
     int row = position.i;
     int col = position.j;
 
