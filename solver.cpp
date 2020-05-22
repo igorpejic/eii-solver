@@ -22,6 +22,9 @@
 #define BOTTOM 2
 #define RIGHT 1
 
+#define NEIGHBOUR_TOP 1
+#define NEIGHBOUR_LEFT 3
+
 
 std::array<int, 4> rotate_piece(std::array<int, 4> piece, int orientation) {
     std::array<int, 4> rotated_piece;
@@ -322,20 +325,25 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
         PiecePlacement piece_on_top = board[(row - 1) * cols + col];
         PiecePlacement piece_on_left = board[row * cols + (col - 1)];
 
-        // piece on top
-        std::vector<PiecePlacement> &possible_piece_placements_top = neighbours_map[get_piece_hash(
-                piece_on_top.index, piece_on_top.orientation, BOTTOM)];
+        std::vector<PiecePlacement> *possible_piece_placements;
 
-        // piece on left
-        std::vector<PiecePlacement> &possible_piece_placements_left = neighbours_map[get_piece_hash(
-                piece_on_left.index, piece_on_left.orientation, RIGHT)];
+        uint_fast8_t neighbour_with_less_choices;
+        if (neighbours_map[get_piece_hash(piece_on_top.index, piece_on_top.orientation, BOTTOM)].size() < neighbours_map[get_piece_hash(piece_on_left.index, piece_on_left.orientation, RIGHT)].size()) {
+            possible_piece_placements = &neighbours_map[get_piece_hash(piece_on_top.index, piece_on_top.orientation, BOTTOM)];
+            neighbour_with_less_choices =  NEIGHBOUR_TOP;
+        } else {
+            possible_piece_placements = &neighbours_map[get_piece_hash(piece_on_left.index, piece_on_left.orientation, RIGHT)];
+            neighbour_with_less_choices =  NEIGHBOUR_LEFT;
+        }
 
         //std::cout << row << ":" << col << std::endl;
         //std::cout << possible_piece_placements_top.size() << std::endl;
 
-        //TODO: iterate over bigger set for performance
-        //
-        for (const auto& elem: possible_piece_placements_top) {
+        //iterate over smaller set for performance
+        for (const auto& elem: *possible_piece_placements) {
+            if(placed_pieces[elem.index]) {
+                continue;
+            }
 
             if (position.i == (rows - 1)  && rotated_pieces[elem.index][elem.orientation].bottom != GRAY) {
                 continue;
@@ -343,12 +351,19 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
             if (position.j == (cols - 1)  && rotated_pieces[elem.index][elem.orientation].right != GRAY) {
                 continue;
             }
-            if(!placed_pieces[elem.index] && rotated_pieces[elem.index][elem.orientation].left == rotated_pieces[piece_on_left.index][piece_on_left.orientation].right) {
-                possible_moves.push_back(elem);
+            if (neighbour_with_less_choices == NEIGHBOUR_TOP) {
+                if(rotated_pieces[elem.index][elem.orientation].left == rotated_pieces[piece_on_left.index][piece_on_left.orientation].right) {
+                    possible_moves.push_back(elem);
+                }
+            } else if (neighbour_with_less_choices == NEIGHBOUR_LEFT) {
+                if(rotated_pieces[elem.index][elem.orientation].top == rotated_pieces[piece_on_top.index][piece_on_top.orientation].bottom) {
+                    possible_moves.push_back(elem);
+                }
             }
         }
         //std::cout << "POSSIBLE MOVES" << possible_moves.size() << std::endl;
     }
+    //std::cout << possible_moves.size() << std::endl;
     return possible_moves;
 }
 
