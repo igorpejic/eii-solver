@@ -10,6 +10,7 @@
 #include <iostream>
 #include <array>
 #include "solver.hpp"
+#include <cinttypes>
 
 #define NORTH 0
 #define EAST 1
@@ -120,10 +121,10 @@ void print_board_editor_b(board board, Piece ** rotated_pieces) {
             std::cout << std::endl;
         }
         Piece piece = rotated_pieces[board[i].index][board[i].orientation];
-        std::cout << piece.top << " ";
-        std::cout << piece.right << " ";
-        std::cout << piece.bottom << " ";
-        std::cout << piece.left << " ";
+        std::cout << (unsigned)piece.top << " ";
+        std::cout << (unsigned)piece.right << " ";
+        std::cout << (unsigned)piece.bottom << " ";
+        std::cout << (unsigned)piece.left << " ";
         std::cout << "      ";
     }
     std::cout << std::endl;
@@ -135,7 +136,7 @@ void print_board_louis_format(board &board) {
         if (i % rows == 0 && i !=0) {
             std::cout << std::endl;
         }
-        std::cout << std::setw(5) << board[i].index << "/" << board[i].orientation;
+        std::cout << std::setw(5) << board[i].index << "/" << +board[i].orientation;
     }
     std::cout << std::endl;
 }
@@ -174,7 +175,7 @@ pieces initialize_pieces_backtracker(const char *filename) {
     std::ifstream infile(filename);
     int i = 0;
     pieces pieces;
-    int top, right, bottom, left;
+    uint_fast8_t top, right, bottom, left;
     int n_pieces = -1;
     int pieces_index = 0;
 
@@ -185,7 +186,7 @@ pieces initialize_pieces_backtracker(const char *filename) {
         } else if(n_pieces != -1 && i - 2 > n_pieces) {
             break;
         } else if (i> 2) {
-            sscanf(line.c_str(), "%d %d %d %d", &top, &right, &bottom, &left);
+            sscanf(line.c_str(), "%" SCNu8 " %" SCNu8 " %" SCNu8 " %" SCNu8, &top, &right, &bottom, &left);
             Piece piece = {top, right, bottom, left};
             pieces.push_back(piece);
             pieces_index++;
@@ -203,9 +204,10 @@ bool operator==(const PiecePlacement& one, const PiecePlacement& other) {
     return (one.index == other.index && one.orientation == other.orientation);
 }
 
-int pieceHasher(const PiecePlacement &p){
-    return ((uint64_t)p.index)<<32 | (uint64_t)p.orientation;
-}
+// use when pieceplacement in neighbours_map is unordered_set
+//int pieceHasher(const PiecePlacement &p){
+//    return ((uint64_t)p.index)<<32 | (uint64_t)p.orientation;
+//}
 
 bool operator==(Piece& one, Piece& other) {
     return (
@@ -295,7 +297,7 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
         }
     } else if(position.i == 0) {
         PiecePlacement piece_on_left = board[row * cols + (col - 1)];
-        std::unordered_set<PiecePlacement> &possible_piece_placements_left = neighbours_map[get_piece_hash(
+        std::vector<PiecePlacement> &possible_piece_placements_left = neighbours_map[get_piece_hash(
                 piece_on_left.index, piece_on_left.orientation, RIGHT)];
         for (const auto& elem: possible_piece_placements_left) {
             if (placed_pieces[elem.index] || rotated_pieces[elem.index][elem.orientation].top != GRAY) {
@@ -305,7 +307,7 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
         }
     } else if(position.j == 0) {
         PiecePlacement piece_on_top = board[(row - 1) * cols + col];
-        std::unordered_set<PiecePlacement> &possible_piece_placements_top = neighbours_map[get_piece_hash(
+        std::vector<PiecePlacement> &possible_piece_placements_top = neighbours_map[get_piece_hash(
                 piece_on_top.index, piece_on_top.orientation, BOTTOM)];
         for (const auto& elem: possible_piece_placements_top) {
             if (placed_pieces[elem.index] || rotated_pieces[elem.index][elem.orientation].left != GRAY) {
@@ -318,17 +320,18 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
         PiecePlacement piece_on_left = board[row * cols + (col - 1)];
 
         // piece on top
-        std::unordered_set<PiecePlacement> &possible_piece_placements_top = neighbours_map[get_piece_hash(
+        std::vector<PiecePlacement> &possible_piece_placements_top = neighbours_map[get_piece_hash(
                 piece_on_top.index, piece_on_top.orientation, BOTTOM)];
 
         // piece on left
-        std::unordered_set<PiecePlacement> &possible_piece_placements_left = neighbours_map[get_piece_hash(
+        std::vector<PiecePlacement> &possible_piece_placements_left = neighbours_map[get_piece_hash(
                 piece_on_left.index, piece_on_left.orientation, RIGHT)];
 
         //std::cout << row << ":" << col << std::endl;
         //std::cout << possible_piece_placements_top.size() << std::endl;
 
         //TODO: iterate over bigger set for performance
+        //
         for (const auto& elem: possible_piece_placements_top) {
 
             if (position.i == (rows - 1)  && rotated_pieces[elem.index][elem.orientation].bottom != GRAY) {
@@ -337,7 +340,7 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
             if (position.j == (cols - 1)  && rotated_pieces[elem.index][elem.orientation].right != GRAY) {
                 continue;
             }
-            if (!placed_pieces[elem.index] && possible_piece_placements_left.find(elem) != possible_piece_placements_left.end()) {
+            if(!placed_pieces[elem.index] && rotated_pieces[elem.index][elem.orientation].left == rotated_pieces[piece_on_left.index][piece_on_left.orientation].right) {
                 possible_moves.push_back(elem);
             }
         }
@@ -442,8 +445,8 @@ neighbours_map_t get_possible_neighbours_map(pieces pieces, Piece** rotated_piec
             int piece_hash_bottom = get_piece_hash(i, orientation, BOTTOM);
             int piece_hash_right = get_piece_hash(i, orientation, RIGHT);
 
-            std::unordered_set<PiecePlacement> possible_right_neighbours;
-            std::unordered_set<PiecePlacement> possible_bottom_neighbours;
+            std::vector<PiecePlacement> possible_right_neighbours;
+            std::vector<PiecePlacement> possible_bottom_neighbours;
 
             /* find all the pieces which can be placed next to this piece */
             for (int k = 0; k < pieces.size(); k++) {
@@ -457,10 +460,10 @@ neighbours_map_t get_possible_neighbours_map(pieces pieces, Piece** rotated_piec
                     neighbour.index = k;
                     neighbour.orientation = neighbour_orientation;
                     if (neighbour_piece.top == piece.bottom && piece.bottom != GRAY) {
-                        possible_bottom_neighbours.insert(neighbour);
+                        possible_bottom_neighbours.push_back(neighbour);
                     }
                     if (neighbour_piece.left == piece.right && piece.right != GRAY) {
-                        possible_right_neighbours.insert(neighbour);
+                        possible_right_neighbours.push_back(neighbour);
                     }
                 }
             }
@@ -481,6 +484,6 @@ neighbours_map_t get_possible_neighbours_map(pieces pieces, Piece** rotated_piec
     return possible_neighbours_map;
 }
 
-int get_piece_hash(int piece_index, int orientation, int side) {
+int get_piece_hash(int piece_index, uint_fast8_t orientation, uint_fast8_t side) {
     return piece_index * 4 * 4 + orientation * 4 + side;
 }

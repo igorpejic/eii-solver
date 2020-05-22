@@ -21,30 +21,30 @@ std::vector<std::pair<int, int>> get_valid_next_moves(std::vector<int> grid, std
 
 
 typedef struct PiecePlacement {
-    int index;
-    int orientation;
+    uint_fast16_t index;
+    uint_fast8_t orientation;
 } PiecePlacement;
 
 typedef struct Piece {
-    int top;
-    int right;
-    int bottom;
-    int left;
+    uint_fast8_t top;
+    uint_fast8_t right;
+    uint_fast8_t bottom;
+    uint_fast8_t left;
 } Piece;
 
 bool operator==(Piece& one, Piece& other);
 bool operator==(PiecePlacement& one, PiecePlacement& other);
 
 typedef struct Position {
-    int i;
-    int j;
+    uint_fast8_t i;
+    uint_fast8_t j;
 } Position;
 
 int pieceHasher(const PiecePlacement &p);
 
 typedef std::vector<Piece> pieces;
 typedef std::vector<PiecePlacement> board;
-typedef std::unordered_map<int, std::unordered_set<PiecePlacement>> neighbours_map_t;
+typedef std::unordered_map<int, std::vector<PiecePlacement>> neighbours_map_t;
 
 
 pieces initialize_pieces_backtracker(const char *filename);
@@ -65,7 +65,7 @@ Piece **get_rotated_pieces_b(pieces pieces);
 
 neighbours_map_t get_possible_neighbours_map(pieces pieces, Piece** rotated_pieces);
 
-int get_piece_hash(int piece_index, int orientation, int side);
+int get_piece_hash(int piece_index, uint_fast8_t orientation, uint_fast8_t side);
 
 namespace std {
     template <> struct hash<PiecePlacement>
