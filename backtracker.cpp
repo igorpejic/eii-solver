@@ -1,15 +1,25 @@
 #include "solver.hpp"
 #include <ctime>
+#include <algorithm>
 
+#include <random>
 #include <iostream>
 using namespace std;
 
-void backtrack(pieces &pieces, placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_map_t &neighbours_map, board board, Position position, int *tiles_placed, bool *solution_found) { 
-    if (*solution_found) {
-        // exit all backtracks
-        return;
-    }
+void backtrack(pieces &pieces, placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_map_t &neighbours_map, board board, Position position, int * const tiles_placed, int *max_pieces_placed, std::default_random_engine rng, bool *solution_found) { 
+    //if (*solution_found) {
+    //    // exit all backtracks
+    //    return;
+    //}
     std::vector<PiecePlacement> next_moves = get_valid_next_moves_b(board, _placed_pieces, pieces, neighbours_map, position, rotated_pieces);
+
+    //if (_placed_pieces.count() > *max_pieces_placed) {
+    //    *max_pieces_placed = _placed_pieces.count();
+    //    std::cout << *max_pieces_placed << std::endl;
+    //    print_board_b(board, rotated_pieces, PUZZLE_SIZE, PUZZLE_SIZE);
+    //    print_board_editor_b(board, rotated_pieces);
+    //}
+
     if (position.i == PUZZLE_SIZE && position.j == 0) {
         print_board_b(board, rotated_pieces, PUZZLE_SIZE, PUZZLE_SIZE);
         for (int j = 0; j < _placed_pieces.size(); j++) {
@@ -22,6 +32,11 @@ void backtrack(pieces &pieces, placed_pieces _placed_pieces, Piece** rotated_pie
         print_board_louis_format(board);
         return;
     }
+
+    //shuffle the vector of possible moves before returning it such that some randomness is introduced in the search process
+    //this is equivalent to drawing a lottery ticket,
+    //although the chances of winning are lower with E-II
+    std::shuffle(std::begin(next_moves), std::end(next_moves), rng);
     for (int i = 0; i < next_moves.size(); i++) {
         Piece piece = rotated_pieces[next_moves[i].index][next_moves[i].orientation];
         PiecePlacement piece_placement;
@@ -34,7 +49,7 @@ void backtrack(pieces &pieces, placed_pieces _placed_pieces, Piece** rotated_pie
         (*tiles_placed)++;
         Position next_position = get_next_position_b(PUZZLE_SIZE, position);
 
-        backtrack(pieces, new_placed_pieces, rotated_pieces, neighbours_map, board, next_position, tiles_placed, solution_found);
+        backtrack(pieces, new_placed_pieces, rotated_pieces, neighbours_map, board, next_position, tiles_placed, max_pieces_placed, rng, solution_found);
     }
     //print_board_b(board, rotated_pieces, PUZZLE_SIZE, PUZZLE_SIZE);
 }

@@ -209,9 +209,9 @@ def play_game(grid, pieces, is_circular=False):
     return return_solution_node(tree.solution_node)
 
 def return_solution_node(node):
-    print(f'solution node {tree.solution_node}')
-    print(f'solution {tree.solution_node.grid}')
-    return tree.solution_node
+    print(f'solution node {node}')
+    print(f'solution {node.grid}')
+    return node
 
 
 class MCTS:
@@ -317,7 +317,7 @@ class Node():
         self.is_terminal = is_terminal
         self.total_n_pieces = total_n_pieces
 
-        self.hash = hash(self.grid.tostring())
+        self.hash = hash(str(self.grid))
         self.is_circular = is_circular
         self.is_solution = is_solution
 

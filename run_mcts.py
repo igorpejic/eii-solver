@@ -33,13 +33,15 @@ def main():
     grid = initialize_grid(grid_size, grid_size)
     print(pieces_to_editor_format(pieces))
 
-    mcts = CustomMCTS(pieces, grid, strategy='avg_depth', is_circular=False)
-    state, depth, solution_found = mcts.predict(N=1000)
-    print(f'\n{solution_found}. Final solution pieces placed: {len(mcts.solution_pieces_order)} Depth: {depth}. Total search pieces placed: {mcts.n_pieces_placed}')
-    print(mcts.solution_pieces_order)
+    # mcts = CustomMCTS(pieces, grid, strategy='avg_depth', is_circular=False)
+    # state, depth, solution_found = mcts.predict(N=1000)
+    # print(f'\n{solution_found}. Final solution pieces placed: {len(mcts.solution_pieces_order)} Depth: {depth}. Total search pieces placed: {mcts.n_pieces_placed}')
+    # print(mcts.solution_pieces_order)
 
     # print(grid.shape, len(pieces))
-    # play_game(grid, pieces, is_circular=False)
+
+    node = play_game(grid, pieces, is_circular=False)
+    print(pieces_to_editor_format(node.grid))
 
 if __name__ == '__main__':
     main()

@@ -123,7 +123,15 @@ void print_board_editor_b(board board, Piece ** rotated_pieces) {
         if (i % rows == 0) {
             std::cout << std::endl;
         }
-        Piece piece = rotated_pieces[board[i].index][board[i].orientation];
+        Piece piece;
+        if (board[i].index == EMPTY) {
+            piece.top = 0; 
+            piece.right = 0; 
+            piece.bottom = 0; 
+            piece.left = 0; 
+        } else{
+            piece = rotated_pieces[board[i].index][board[i].orientation];
+        }
         std::cout << (unsigned)piece.top << " ";
         std::cout << (unsigned)piece.right << " ";
         std::cout << (unsigned)piece.bottom << " ";
@@ -180,21 +188,29 @@ pieces initialize_pieces_backtracker(const char *filename) {
     pieces pieces;
     uint_fast8_t top, right, bottom, left;
     int n_pieces = -1;
-    int pieces_index = 0;
 
-    for ( std::string line; getline( infile, line ); ) {
-        if (i == 0) {
-            sscanf(line.c_str(), "%i", &n_pieces);
-            n_pieces *= n_pieces;
-        } else if(n_pieces != -1 && i - 2 > n_pieces) {
-            break;
-        } else if (i> 2) {
-            sscanf(line.c_str(), "%" SCNu8 " %" SCNu8 " %" SCNu8 " %" SCNu8, &top, &right, &bottom, &left);
+    if(strcmp(filename, "256pieces.txt") == 0) {
+        std::cout << "initializing E-II" << std::endl;
+        for ( std::string line; getline( infile, line ); ) {
+            n_pieces = 256;
+            sscanf(line.c_str(), "%" SCNu8 " %" SCNu8 " %" SCNu8 " %" SCNu8, &top, &bottom, &left, &right);
             Piece piece = {top, right, bottom, left};
             pieces.push_back(piece);
-            pieces_index++;
         }
-        i++;
+    } else {
+        for ( std::string line; getline( infile, line ); ) {
+            if (i == 0) {
+                sscanf(line.c_str(), "%i", &n_pieces);
+                n_pieces *= n_pieces;
+            } else if(n_pieces != -1 && i - 2 > n_pieces) {
+                break;
+            } else if (i> 2) {
+                sscanf(line.c_str(), "%" SCNu8 " %" SCNu8 " %" SCNu8 " %" SCNu8, &top, &right, &bottom, &left);
+                Piece piece = {top, right, bottom, left};
+                pieces.push_back(piece);
+            }
+            i++;
+        }
     }
     std::cout << "Pieces length: " << pieces.size() << std::endl;
     //print_pieces_b(pieces);
@@ -282,8 +298,8 @@ std::vector<std::pair<int, int>> get_valid_next_moves(std::vector<int> grid, std
 std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &placed_pieces, pieces &pieces, neighbours_map_t &neighbours_map, Position &position, Piece** rotated_pieces) {
     std::vector<PiecePlacement> possible_moves;
 
-    //reserve memory; no speedup
-    //possible_moves.reserve(10);
+    //reserve memory; some speedup might be observed
+    possible_moves.reserve(50);
 
     int row = position.i;
     int col = position.j;
@@ -368,6 +384,7 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
         //std::cout << "POSSIBLE MOVES" << possible_moves.size() << std::endl;
     }
     //std::cout << possible_moves.size() << std::endl;
+
     return possible_moves;
 }
 

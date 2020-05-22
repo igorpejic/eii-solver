@@ -5,6 +5,7 @@
 #include <ctime>
 #include <iomanip>
 #include <map>
+#include <random>
 #include <tuple>
 #include <cmath>
 #include <chrono>
@@ -42,6 +43,8 @@ int main (int argc, const char* argv[]) {
     //placed_pieces placed_pieces(pieces_b.size(), false);  
     placed_pieces placed_pieces;  
 
+    int max_pieces_placed = 0;
+
     board board = initialize_board_b(rows, rows);
 
     neighbours_map_t neighbours_map = get_possible_neighbours_map(pieces_b, rotated_pieces);
@@ -49,7 +52,11 @@ int main (int argc, const char* argv[]) {
     int tiles_placed = 0;
     bool solution_found = false;
     auto start = std::chrono::high_resolution_clock::now();
-    backtrack(pieces_b, placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &solution_found);
+
+    std::random_device rd;
+    auto rng = std::default_random_engine{rd()};
+    // backtrack(pieces_b, placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &max_pieces_placed, rng, &solution_found);
+    // backtrack(pieces_b, placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &max_pieces_placed, rng, &solution_found);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
