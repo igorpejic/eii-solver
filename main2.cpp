@@ -11,6 +11,7 @@
 #include <chrono>
 #include "mcts.hpp"
 #include "backtracker.hpp"
+#include "ucb.hpp"
 #define MAX_DEPTH 100
 #define AVG_DEPTH 101
 #define SIMULATION_REPEATS 5
@@ -56,7 +57,7 @@ int main (int argc, const char* argv[]) {
     std::random_device rd;
     auto rng = std::default_random_engine{rd()};
     // backtrack(pieces_b, placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &max_pieces_placed, rng, &solution_found);
-    // backtrack(pieces_b, placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &max_pieces_placed, rng, &solution_found);
+    play_game(pieces_b, placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &max_pieces_placed, rng, &solution_found);
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
