@@ -1,4 +1,4 @@
-#define EMPTY 8 
+#define EMPTY 5 
 
 
 extern unsigned long long int zobrist_table[PUZZLE_SIZE][PUZZLE_SIZE][PUZZLE_SIZE * PUZZLE_SIZE * 4]; 
@@ -43,7 +43,11 @@ namespace std {
             } 
         } 
       }
-      return h; 
+      ////std::hash<std::bitset<25>> hash_fn;
+      //size_t h = hash_fn(n.m_placed_pieces);
+      //cout << n.m_placed_pieces << "-" << h << endl;
+      return h;
+      
     } 
   };
 }
@@ -56,7 +60,7 @@ class MCTS {
         Piece** m_rotated_pieces;
         neighbours_map_t m_neighbours_map;
         std::unordered_map<Node, std::vector<Node>> m_children;
-        std::unordered_map<Node, int> m_Q;
+        std::unordered_map<Node, double> m_Q;
         std::unordered_map<Node, int> m_N;
 
         Node choose(Node node);

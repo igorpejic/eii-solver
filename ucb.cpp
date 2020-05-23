@@ -71,13 +71,18 @@ int play_game(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_m
     MCTS mcts(rotated_pieces, neighbours_map);
 
     while(true) {
-        if (node.m_is_terminal) {
+        if (node.m_is_solution) {
+            std::cout << "solution found!" << std::endl;
+            return mcts.m_tiles_placed;
+        }
+        else if (node.m_is_terminal) {
+            //cout << "reset" << std::endl;
             // terminal node
-            //std::cout << "terminal node" << std::endl;
             node = Node(board, _placed_pieces, start_position, false, false);
             n_restarts += 1;
         }
         node = mcts.choose(node); 
+        //std::cout << "chosen node:" << node.m_placed_pieces <<std::endl;
         for (int i = 0; i < n_rollouts; i++) {
             bool solution_found = mcts.do_rollout(node);
             if(solution_found) {
@@ -85,7 +90,10 @@ int play_game(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_m
                 return mcts.m_tiles_placed;
             }
         }
-        cout << "q_size:" << mcts.m_Q.size() << endl;
+        if (n_restarts % 1000 == 0) {
+            cout << "q_size:" << mcts.m_Q.size() << endl;
+        }
+        //cout << "q_size:" << mcts.m_Q.size() << endl;
         //int i = 0;
         //for (auto kv : mcts.m_Q) {
         //    cout << i << ":" << +kv.first.m_next_position.i << " " << +kv.first.m_next_position.j << endl;
@@ -100,7 +108,7 @@ MCTS::MCTS(Piece** rotated_pieces, neighbours_map_t &neighbours_map) {
     m_rotated_pieces = rotated_pieces;
     m_neighbours_map = neighbours_map;
     std::unordered_map<Node, std::vector<Node>> m_children;
-    std::unordered_map<Node, int> m_Q;
+    std::unordered_map<Node, double> m_Q;
     std::unordered_map<Node, int> m_N;
     m_tiles_placed = 0;
 }
@@ -113,10 +121,11 @@ Node MCTS::choose(Node node) {
     if (m_children.find(node) == m_children.end()) {
         return node.find_random_child(m_rotated_pieces, m_neighbours_map, &m_tiles_placed);
     } else {
-        int best_score = 0;
+        double best_score = 0;
         Node best_node = m_children[node][0];
         for (int i = 0; i < m_children[node].size(); i++) {
             double avg_reward = (double) m_Q[m_children[node][i]] / m_N[m_children[node][i]];
+            //cout << "avg_reward" << avg_reward << "_"  << m_N[m_children[node][i]] << std::endl;
             if(avg_reward > best_score) { 
                 best_score = avg_reward;
                 best_node = m_children[node][i];
@@ -128,36 +137,40 @@ Node MCTS::choose(Node node) {
 
 
 bool MCTS::do_rollout(Node &node) {
-    path_t path = this->_select(node);
+    path_t path = _select(node);
     Node leaf = path.back();
     if (leaf.m_is_solution) {
         std::cout << "Solution found." << std::endl;
-        print_final_solution(leaf.m_board, this->m_rotated_pieces);
+        print_final_solution(leaf.m_board, m_rotated_pieces);
         std::cout << "Tiles placed" << std::endl;
         return true;
     }
-    this->_expand(leaf);
-    double reward = this->_simulate(node);
+    _expand(leaf);
+    double reward = _simulate(node);
     if (reward < 0) {
-        print_final_solution(this->m_solution_node->m_board, this->m_rotated_pieces);
-        delete(this->m_solution_node);
+        print_final_solution(m_solution_node->m_board, m_rotated_pieces);
+        delete(m_solution_node);
         return true;
     }
     //cout << "reward" << reward << endl;
-    this->_backpropagate(path, reward);
+    _backpropagate(path, reward);
     return false;
 }
 
 
 void MCTS::_backpropagate(path_t &path, double reward) { 
     //Send the reward back up to the ancestors of the leaf
+    //cout << "backprop" << reward <<endl;
     for (int i = 0; i < path.size(); i++) {
         //cout << "PATH:" << path[i].m_placed_pieces << "--"  << m_Q.size() << std::endl;
         bool in_q = m_Q.find(path[i]) == m_Q.end();
         //cout << "PATH2:" << in_q  << std::endl;
         m_N[path[i]] += 1;
+        //cout << "rward" << m_Q[path[i]] << endl;
         m_Q[path[i]] += reward;
+        //cout << "rward2" << m_Q[path[i]] << endl;
     }
+    //std::cout << m_Q.size() << endl;
     //std::cout << reward << std::endl;
 }
 
@@ -181,7 +194,7 @@ path_t MCTS::_select(Node &node) {
             }
         }
         //descend a layer deeper
-        current_node = this->_uct_select(current_node);
+        current_node = _uct_select(current_node);
     }
 }
 
@@ -190,12 +203,13 @@ Node MCTS::_uct_select(Node &node) {
     //
     double log_N_vertex = log(m_N[node]);
 
-    double exploration_weight = 1;
+    double exploration_weight = 2.0;
 
     double best_score = 0;
+    // TODO: how to avoid copying here ; use pointer - stack and then delete after?
     Node best_node = m_children[node][0];
     for (int i = 0; i < m_children[node].size(); i++) {
-        double ucb = m_Q[node] / m_N[node] +  sqrt(log_N_vertex / m_N[node]);
+        double ucb = m_Q[m_children[node][i]] / m_N[m_children[node][i]] + exploration_weight * sqrt(log_N_vertex / m_N[m_children[node][i]]);
         if(ucb > best_score) { 
             best_score = ucb;
             best_node = m_children[node][i];
@@ -220,7 +234,7 @@ double MCTS::_simulate(Node &node) {
         //cout << "simulation:" << current_node.m_placed_pieces << std::endl;
         if (current_node.m_is_solution) {
             std::cout << "solution found in simulation" << std::endl;
-            this->m_solution_node = new Node(current_node);
+            m_solution_node = new Node(current_node);
             return SOLUTION_FOUND;
         } else if (current_node.m_is_terminal) {
             double reward = (double)current_node.m_placed_pieces.count() / (PUZZLE_SIZE * PUZZLE_SIZE);
