@@ -56,8 +56,20 @@ int main (int argc, const char* argv[]) {
 
     std::random_device rd;
     auto rng = std::default_random_engine{rd()};
-    // backtrack(pieces_b, placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &max_pieces_placed, rng, &solution_found);
-    play_game(pieces_b, placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &max_pieces_placed, rng, &solution_found);
+    bool use_backtracker = true;
+    if (argc >=2) {
+        if(std::string(argv[2]) == "mcts") {
+            use_backtracker = false;
+            std::cout << "Running with MCTS" << std::endl;
+        } else {
+            std::cout << "Running using backtracker." << std::endl;
+        }
+    }
+    if (use_backtracker) {
+        backtrack(placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &max_pieces_placed, rng, &solution_found);
+    } else {
+        play_game(placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &max_pieces_placed, rng, &solution_found);
+    }
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();

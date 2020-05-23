@@ -36,11 +36,13 @@ typedef struct Piece {
 
 bool operator==(Piece& one, Piece& other);
 bool operator==(PiecePlacement& one, PiecePlacement& other);
+bool operator==(const PiecePlacement& one, const PiecePlacement& other);
 
 typedef struct Position {
     uint_fast8_t i;
     uint_fast8_t j;
 } Position;
+bool operator==(const Position& one, const Position& other);
 
 int pieceHasher(const PiecePlacement &p);
 
@@ -56,7 +58,7 @@ typedef std::bitset<PUZZLE_SIZE * PUZZLE_SIZE> placed_pieces;
 
 Position get_next_position_b(int cols, Position prev_position);
 
-std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &placed_pieces, pieces &pieces, neighbours_map_t &neighbours_map_t,  Position &position, Piece** rotated_pieces);
+std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &placed_pieces, neighbours_map_t &neighbours_map_t,  Position &position, Piece** rotated_pieces);
 
 void print_board_editor_b(board board, Piece ** rotated_pieces);
 void print_board_b(board board, Piece** rotated_pieces, int rows, int cols);

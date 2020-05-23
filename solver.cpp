@@ -217,10 +217,12 @@ pieces initialize_pieces_backtracker(const char *filename) {
     return pieces;
 }
 
-
-
 bool operator==(const PiecePlacement& one, const PiecePlacement& other) {
     return (one.index == other.index && one.orientation == other.orientation);
+}
+
+bool operator==(const Position& one, const Position& other) {
+    return (one.i == other.i && one.j == other.j);
 }
 
 // use when pieceplacement in neighbours_map is unordered_set
@@ -295,7 +297,7 @@ std::vector<std::pair<int, int>> get_valid_next_moves(std::vector<int> grid, std
     return possible_moves;
 }
 
-std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &placed_pieces, pieces &pieces, neighbours_map_t &neighbours_map, Position &position, Piece** rotated_pieces) {
+std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &placed_pieces, neighbours_map_t &neighbours_map, Position &position, Piece** rotated_pieces) {
     std::vector<PiecePlacement> possible_moves;
 
     //reserve memory; some speedup might be observed
@@ -305,7 +307,7 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
     int col = position.j;
 
     if (position.i == 0 && position.j == 0) {
-        for (int i = 0; i < pieces.size(); i++) {
+        for (int i = 0; i < PUZZLE_SIZE * PUZZLE_SIZE; i++) {
             for (int orientation = 0; orientation < 4; orientation++) {
                 Piece piece = rotated_pieces[i][orientation];
                 //std::cout << "piece:" << piece.top << piece.right << piece.bottom << piece.left << std::endl;
