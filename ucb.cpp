@@ -17,6 +17,8 @@
 
 #define SOLUTION_FOUND = 99999
 
+using namespace std;
+
 template<typename Iter, typename RandomGenerator>
 Iter select_randomly(Iter start, Iter end, RandomGenerator& g) {
     std::uniform_int_distribution<> dis(0, std::distance(start, end) - 1);
@@ -120,6 +122,7 @@ void MCTS::_backpropagate(path_t &path, double reward) {
         m_N[path[i]] += 1;
         m_Q[path[i]] += reward;
     }
+    //std::cout << reward << std::endl;
 }
 
 path_t MCTS::_select(Node &node) {
@@ -178,7 +181,7 @@ double MCTS::_simulate(Node &node) {
     Node current_node = node;
     while(true) {
         if (current_node.m_is_terminal) {
-            double reward = current_node.m_placed_pieces.count() / (PUZZLE_SIZE * PUZZLE_SIZE);
+            double reward = (double)current_node.m_placed_pieces.count() / (PUZZLE_SIZE * PUZZLE_SIZE);
             return reward;
         }
         current_node = current_node.find_random_child(m_rotated_pieces, m_neighbours_map, &m_tiles_placed);
