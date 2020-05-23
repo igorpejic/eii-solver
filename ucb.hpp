@@ -5,6 +5,7 @@ extern unsigned long long int zobrist_table[PUZZLE_SIZE][PUZZLE_SIZE][PUZZLE_SIZ
 
 int play_game(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_map_t &neighbours_map, board board, Position position, int * const tiles_placed, int *max_pieces_placed, std::default_random_engine rng, bool *solution_found);
 
+typedef unsigned long long int hash_t;
 class Node {
     typedef std::vector<Node> node_children_t;
     public:
@@ -14,8 +15,9 @@ class Node {
 
         bool m_is_terminal;
         bool m_is_solution;
+        unsigned long long int m_hash;
 
-        Node(board &board, placed_pieces _placed_pieces, Position next_position, bool is_terminal, bool is_solution);
+        Node(board &board, placed_pieces _placed_pieces, Position next_position, bool is_terminal, bool is_solution, hash_t);
         Node find_random_child();
         Node find_random_child(Piece **rotated_pieces, neighbours_map_t &neighbours_map, int *tiles_placed);
         node_children_t find_children(Piece **rotated_pieces, neighbours_map_t &neighbours_map, int *tiles_placed);
@@ -23,6 +25,7 @@ class Node {
 
         Node make_move(PiecePlacement piece_placement, Piece **rotated_pieces, neighbours_map_t &neighbours_map);
         bool operator==(const Node &n1) const;
+
 };
 
 namespace std {
@@ -32,25 +35,15 @@ namespace std {
   {
     std::size_t operator()(const Node& n) const
     {
-      // https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-5-zobrist-hashing/
-      unsigned long long int h = 0; 
-      for (int i = 0; i<PUZZLE_SIZE; i++) { 
-        for (int j = 0; j<PUZZLE_SIZE; j++) { 
-            if (n.m_board[i * PUZZLE_SIZE + j].orientation != EMPTY) 
-            { 
-                int piece = n.m_board[i * PUZZLE_SIZE + j].index * 4 + n.m_board[i * PUZZLE_SIZE + j].orientation; 
-                h ^= zobrist_table[i][j][piece]; 
-            } 
-        } 
-      }
-      ////std::hash<std::bitset<25>> hash_fn;
-      //size_t h = hash_fn(n.m_placed_pieces);
-      //cout << n.m_placed_pieces << "-" << h << endl;
-      return h;
-      
+      return n.m_hash;
     } 
   };
 }
+
+typedef struct qn {
+    double q;
+    int n;
+} qn;
 
 typedef std::vector<Node> path_t;
 
@@ -60,8 +53,7 @@ class MCTS {
         Piece** m_rotated_pieces;
         neighbours_map_t m_neighbours_map;
         std::unordered_map<Node, std::vector<Node>> m_children;
-        std::unordered_map<Node, double> m_Q;
-        std::unordered_map<Node, int> m_N;
+        std::unordered_map<Node, qn> m_QN;
 
         Node choose(Node node);
 
@@ -81,3 +73,4 @@ class MCTS {
         int m_tiles_placed;
 };
 
+hash_t get_zobrist_hash(hash_t prev_hash, PiecePlacement &piece_placement, Position &new_position);

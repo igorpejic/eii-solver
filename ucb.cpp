@@ -28,13 +28,16 @@ Iter select_randomly(Iter start, Iter end, RandomGenerator& g) {
 
 template<typename Iter>
 Iter select_randomly(Iter start, Iter end) {
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
+    //static std::random_device rd;
+    //static std::mt19937 gen(rd());
+    //
+    //reproducibility
+    static std::mt19937 gen(567);
     return select_randomly(start, end, gen);
 }
 
 unsigned long long int zobrist_table[PUZZLE_SIZE][PUZZLE_SIZE][PUZZLE_SIZE * PUZZLE_SIZE * 4]; 
-std::mt19937 mt(01234567);  // reproducibility
+std::mt19937 mt(4567);  // reproducibility
 //std::mt19937 mt(time(NULL)); 
   
 unsigned long long int random_int() 
@@ -65,7 +68,7 @@ int play_game(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_m
     Position start_position;
     start_position.i = 0;
     start_position.j = 0;
-    Node node(board, _placed_pieces, start_position, false, false);
+    Node node(board, _placed_pieces, start_position, false, false, 0);
     int max_depth_reached = 0;
 
     MCTS mcts(rotated_pieces, neighbours_map);
@@ -83,7 +86,7 @@ int play_game(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_m
                 cout <<  "Depth reached:" << max_depth_reached << std::endl;
                 cout <<  "Tiles placed:" << mcts.m_tiles_placed << std::endl;
             }
-            node = Node(board, _placed_pieces, start_position, false, false);
+            node = Node(board, _placed_pieces, start_position, false, false, 0);
             n_restarts += 1;
         }
         node = mcts.choose(node); 
@@ -114,8 +117,8 @@ MCTS::MCTS(Piece** rotated_pieces, neighbours_map_t &neighbours_map) {
     m_rotated_pieces = rotated_pieces;
     m_neighbours_map = neighbours_map;
     std::unordered_map<Node, std::vector<Node>> m_children;
-    std::unordered_map<Node, double> m_Q;
-    std::unordered_map<Node, int> m_N;
+    //std::unordered_map<Node, double> m_Q;
+    //std::unordered_map<Node, int> m_N;
     m_tiles_placed = 0;
 }
 
@@ -130,7 +133,7 @@ Node MCTS::choose(Node node) {
         double best_score = 0;
         Node best_node = m_children[node][0];
         for (size_t i = 0; i < m_children[node].size(); i++) {
-            double avg_reward = (double) m_Q[m_children[node][i]] / m_N[m_children[node][i]];
+            double avg_reward = (double) m_QN[m_children[node][i]].q / m_QN[m_children[node][i]].n;
             //cout << "avg_reward" << avg_reward << "_"  << m_N[m_children[node][i]] << std::endl;
             if(avg_reward > best_score) { 
                 best_score = avg_reward;
@@ -169,9 +172,10 @@ void MCTS::_backpropagate(path_t &path, double reward) {
     //cout << "backprop" << reward <<endl;
     for (size_t i = 0; i < path.size(); i++) {
         //cout << "PATH:" << path[i].m_placed_pieces << "--"  << m_Q.size() << std::endl;
-        m_N[path[i]] += 1;
+
+        m_QN[path[i]].n += 1;
         //cout << "rward" << m_Q[path[i]] << endl;
-        m_Q[path[i]] += reward;
+        m_QN[path[i]].q += reward;
         //cout << "rward2" << m_Q[path[i]] << endl;
     }
     //std::cout << m_Q.size() << endl;
@@ -205,15 +209,15 @@ path_t MCTS::_select(Node &node) {
 Node MCTS::_uct_select(Node &node) {
     //Select a child of node, balancing exploration & exploitation"
     //
-    double log_N_vertex = log(m_N[node]);
+    double log_N_vertex = log(m_QN[node].n);
 
-    double exploration_weight = 1.41;
+    double exploration_weight = 2.41;
 
     double best_score = 0;
     // TODO: how to avoid copying here ; use pointer - stack and then delete after?
     Node best_node = m_children[node][0];
     for (size_t i = 0; i < m_children[node].size(); i++) {
-        double ucb = m_Q[m_children[node][i]] / m_N[m_children[node][i]] + exploration_weight * sqrt(log_N_vertex / m_N[m_children[node][i]]);
+        double ucb = m_QN[m_children[node][i]].q / m_QN[m_children[node][i]].n + exploration_weight * sqrt(log_N_vertex / m_QN[m_children[node][i]].n);
         if(ucb > best_score) { 
             best_score = ucb;
             best_node = m_children[node][i];
@@ -250,15 +254,23 @@ double MCTS::_simulate(Node &node) {
 
 
 
-Node::Node(board &board, placed_pieces _placed_pieces, Position next_position, bool is_terminal, bool is_solution) {
+Node::Node(board &board, placed_pieces _placed_pieces, Position next_position, bool is_terminal, bool is_solution, hash_t  hash) {
     m_board = board;
     m_placed_pieces = _placed_pieces;
     m_is_terminal = is_terminal;
     m_is_solution = is_solution;
     m_next_position = next_position;
+    m_hash = hash;
 }
 
 bool Node::operator==(const Node &n2) const {
+    if (m_hash == n2.m_hash) {
+        //TODO: this could fail if hash collision happens; but its faster then comparion all below
+        return true;
+    } else {
+        return false;
+    }
+
     if (m_placed_pieces != n2.m_placed_pieces) {
         return false;
     } else if (!(m_next_position == n2.m_next_position)) {
@@ -308,6 +320,15 @@ Node Node::make_move(PiecePlacement piece_placement, Piece **rotated_pieces, nei
             new_board, new_placed_pieces, neighbours_map, new_next_position, rotated_pieces);
 
     bool is_terminal = !(next_moves.size()) ? true : false;
-    Node new_node(new_board, new_placed_pieces, new_next_position, is_terminal, new_placed_pieces.all());
+
+    hash_t hash = get_zobrist_hash(m_hash, piece_placement, m_next_position);
+
+    Node new_node(new_board, new_placed_pieces, new_next_position, is_terminal, new_placed_pieces.all(), hash);
     return new_node;
+}
+
+hash_t get_zobrist_hash(hash_t prev_hash, PiecePlacement &piece_placement, Position &new_position) { 
+    hash_t new_hash = prev_hash;
+    new_hash ^= zobrist_table[new_position.i][new_position.j][piece_placement.index * 4 + piece_placement.orientation]; 
+    return new_hash;
 }
