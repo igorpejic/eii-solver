@@ -57,16 +57,16 @@ void initialize_zobrist_table() {
 
 int play_game(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_map_t &neighbours_map, board board, Position position, int * const tiles_placed, int *max_pieces_placed, std::default_random_engine rng, bool *solution_found) { 
 
-    const int n_rollouts = 10;
+    const int n_rollouts = 3;
 
     initialize_zobrist_table();
-
     int n_restarts = 0;
     //TODO: start from 0, 1
     Position start_position;
     start_position.i = 0;
     start_position.j = 0;
     Node node(board, _placed_pieces, start_position, false, false);
+    int max_depth_reached = 0;
 
     MCTS mcts(rotated_pieces, neighbours_map);
 
@@ -78,11 +78,16 @@ int play_game(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_m
         else if (node.m_is_terminal) {
             //cout << "reset" << std::endl;
             // terminal node
+            if (node.m_placed_pieces.count() > max_depth_reached) {
+                max_depth_reached = node.m_placed_pieces.count();
+                cout <<  "Depth reached:" << max_depth_reached << std::endl;
+                cout <<  "Tiles placed:" << mcts.m_tiles_placed << std::endl;
+            }
             node = Node(board, _placed_pieces, start_position, false, false);
             n_restarts += 1;
         }
         node = mcts.choose(node); 
-        //std::cout << "chosen node:" << node.m_placed_pieces <<std::endl;
+        // std::cout << "chosen node:" << node.m_placed_pieces <<std::endl;
         for (int i = 0; i < n_rollouts; i++) {
             bool solution_found = mcts.do_rollout(node);
             if(solution_found) {
@@ -90,9 +95,10 @@ int play_game(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_m
                 return mcts.m_tiles_placed;
             }
         }
-        if (n_restarts % 1000 == 0) {
-            cout << "q_size:" << mcts.m_Q.size() << endl;
-        }
+        //if (n_restarts % 4000 == 0) {
+        //    cout << "q_size:" << mcts.m_Q.size() << endl;
+        //}
+        //
         //cout << "q_size:" << mcts.m_Q.size() << endl;
         //int i = 0;
         //for (auto kv : mcts.m_Q) {
@@ -123,7 +129,7 @@ Node MCTS::choose(Node node) {
     } else {
         double best_score = 0;
         Node best_node = m_children[node][0];
-        for (int i = 0; i < m_children[node].size(); i++) {
+        for (size_t i = 0; i < m_children[node].size(); i++) {
             double avg_reward = (double) m_Q[m_children[node][i]] / m_N[m_children[node][i]];
             //cout << "avg_reward" << avg_reward << "_"  << m_N[m_children[node][i]] << std::endl;
             if(avg_reward > best_score) { 
@@ -161,10 +167,8 @@ bool MCTS::do_rollout(Node &node) {
 void MCTS::_backpropagate(path_t &path, double reward) { 
     //Send the reward back up to the ancestors of the leaf
     //cout << "backprop" << reward <<endl;
-    for (int i = 0; i < path.size(); i++) {
+    for (size_t i = 0; i < path.size(); i++) {
         //cout << "PATH:" << path[i].m_placed_pieces << "--"  << m_Q.size() << std::endl;
-        bool in_q = m_Q.find(path[i]) == m_Q.end();
-        //cout << "PATH2:" << in_q  << std::endl;
         m_N[path[i]] += 1;
         //cout << "rward" << m_Q[path[i]] << endl;
         m_Q[path[i]] += reward;
@@ -187,7 +191,7 @@ path_t MCTS::_select(Node &node) {
         }
 
         //TODO (performance): replace m_children with set
-        for(int i = 0; i < m_children[current_node].size(); i++) {
+        for(size_t i = 0; i < m_children[current_node].size(); i++) {
             if(m_children.find(m_children[current_node][i]) == m_children.end()) {
                 result_path.push_back(m_children[current_node][i]);
                 return result_path;
@@ -203,12 +207,12 @@ Node MCTS::_uct_select(Node &node) {
     //
     double log_N_vertex = log(m_N[node]);
 
-    double exploration_weight = 2.0;
+    double exploration_weight = 1.41;
 
     double best_score = 0;
     // TODO: how to avoid copying here ; use pointer - stack and then delete after?
     Node best_node = m_children[node][0];
-    for (int i = 0; i < m_children[node].size(); i++) {
+    for (size_t i = 0; i < m_children[node].size(); i++) {
         double ucb = m_Q[m_children[node][i]] / m_N[m_children[node][i]] + exploration_weight * sqrt(log_N_vertex / m_N[m_children[node][i]]);
         if(ucb > best_score) { 
             best_score = ucb;
@@ -285,7 +289,7 @@ Node::node_children_t Node::find_children(Piece **rotated_pieces, neighbours_map
     if (!next_moves.size()) {
         return children;
     }
-    for(int i = 0; i < next_moves.size(); i++) {
+    for(size_t i = 0; i < next_moves.size(); i++) {
         Node new_node = make_move(next_moves[i], rotated_pieces, neighbours_map);
         (*tiles_placed)++;
         children.push_back(new_node);
