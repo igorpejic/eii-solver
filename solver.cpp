@@ -17,7 +17,7 @@
 #define SOUTH 2
 #define WEST 3
 #define GRAY 0
-#define EMPTY -1 
+#define EMPTY 5
 
 #define BOTTOM 2
 #define RIGHT 1
@@ -124,7 +124,7 @@ void print_board_editor_b(board board, Piece ** rotated_pieces) {
             std::cout << std::endl;
         }
         Piece piece;
-        if (board[i].index == EMPTY) {
+        if (board[i].orientation == EMPTY) {
             piece.top = 0; 
             piece.right = 0; 
             piece.bottom = 0; 
@@ -399,6 +399,7 @@ board initialize_board_b(int rows, int cols) {
             piece.index = EMPTY;
             piece.orientation = EMPTY;
             board.push_back(piece);
+            //std::cout << (unsigned)piece.orientation << std::endl;
         }
     }
     return board;
@@ -410,7 +411,7 @@ void print_board_b(board board, Piece** rotated_pieces, int rows, int cols) {
 
         for (int col = 0; col < cols; col++) {
             int top = -1;
-            if (board[matrix_row * cols + col].index != EMPTY) {
+            if (board[matrix_row * cols + col].orientation != EMPTY) {
                 Piece piece = rotated_pieces[board[matrix_row * cols + col].index][board[matrix_row * cols + col].orientation];
                 top = piece.top;
             }
@@ -421,7 +422,7 @@ void print_board_b(board board, Piece** rotated_pieces, int rows, int cols) {
         for (int col = 0; col < cols; col++) {
             int right = -1;
             int left = -1;
-            if (board[matrix_row * cols + col].index != EMPTY) {
+            if (board[matrix_row * cols + col].orientation != EMPTY) {
                 Piece piece = rotated_pieces[board[matrix_row * cols + col].index][board[matrix_row * cols + col].orientation];
                 right = piece.right;
                 left = piece.left;
@@ -432,7 +433,7 @@ void print_board_b(board board, Piece** rotated_pieces, int rows, int cols) {
 
         for (int col = 0; col < cols; col++) {
             int bottom = -1;
-            if (board[matrix_row * cols + col].index != EMPTY) {
+            if (board[matrix_row * cols + col].orientation != EMPTY) {
                 Piece piece = rotated_pieces[board[matrix_row * cols + col].index][board[matrix_row * cols + col].orientation];
                 bottom = piece.bottom;
             }
@@ -527,4 +528,10 @@ neighbours_map_t get_possible_neighbours_map(pieces pieces, Piece** rotated_piec
 
 int get_piece_hash(int piece_index, uint_fast8_t orientation, uint_fast8_t side) {
     return piece_index * 4 * 4 + orientation * 4 + side;
+}
+
+void print_final_solution(board board, Piece **rotated_pieces) {
+    print_board_b(board, rotated_pieces, PUZZLE_SIZE, PUZZLE_SIZE);
+    print_board_editor_b(board, rotated_pieces);
+    print_board_louis_format(board);
 }

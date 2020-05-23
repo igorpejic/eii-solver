@@ -80,3 +80,5 @@ namespace std {
         }
     };
 }
+
+void print_final_solution(board board, Piece **rotated_pieces);

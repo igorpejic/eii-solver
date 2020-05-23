@@ -15,7 +15,7 @@
 #include  <random>
 #include  <iterator>
 
-#define SOLUTION_FOUND = 99999
+#define SOLUTION_FOUND -1
 
 using namespace std;
 
@@ -34,8 +34,8 @@ Iter select_randomly(Iter start, Iter end) {
 }
 
 unsigned long long int zobrist_table[PUZZLE_SIZE][PUZZLE_SIZE][PUZZLE_SIZE * PUZZLE_SIZE * 4]; 
-//std::mt19937 mt(01234567);  // reproducibility
-std::mt19937 mt(time(NULL)); 
+std::mt19937 mt(01234567);  // reproducibility
+//std::mt19937 mt(time(NULL)); 
   
 unsigned long long int random_int() 
 { 
@@ -55,9 +55,9 @@ void initialize_zobrist_table() {
     }
 }
 
-void play_game(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_map_t &neighbours_map, board board, Position position, int * const tiles_placed, int *max_pieces_placed, std::default_random_engine rng, bool *solution_found) { 
+int play_game(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_map_t &neighbours_map, board board, Position position, int * const tiles_placed, int *max_pieces_placed, std::default_random_engine rng, bool *solution_found) { 
 
-    const int n_rollouts = 100;
+    const int n_rollouts = 10;
 
     initialize_zobrist_table();
 
@@ -81,10 +81,16 @@ void play_game(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_
         for (int i = 0; i < n_rollouts; i++) {
             bool solution_found = mcts.do_rollout(node);
             if(solution_found) {
-                std::cout << mcts.m_tiles_placed << std::endl;
-                return;
+                //std::cout << mcts.m_tiles_placed << std::endl;
+                return mcts.m_tiles_placed;
             }
         }
+        cout << "q_size:" << mcts.m_Q.size() << endl;
+        //int i = 0;
+        //for (auto kv : mcts.m_Q) {
+        //    cout << i << ":" << +kv.first.m_next_position.i << " " << +kv.first.m_next_position.j << endl;
+        //    i++;
+        //}
         //std::cout << node.m_placed_pieces.count() << std::endl;
         //std::cout << mcts.m_tiles_placed << " " << mcts.m_tiles_placed % 100000 << std::endl;
     }
@@ -100,25 +106,55 @@ MCTS::MCTS(Piece** rotated_pieces, neighbours_map_t &neighbours_map) {
 }
 
 
+Node MCTS::choose(Node node) {
+    if (node.m_is_terminal) {
+        std::cout << "This should never happen!!!" << std::endl;
+    }
+    if (m_children.find(node) == m_children.end()) {
+        return node.find_random_child(m_rotated_pieces, m_neighbours_map, &m_tiles_placed);
+    } else {
+        int best_score = 0;
+        Node best_node = m_children[node][0];
+        for (int i = 0; i < m_children[node].size(); i++) {
+            double avg_reward = (double) m_Q[m_children[node][i]] / m_N[m_children[node][i]];
+            if(avg_reward > best_score) { 
+                best_score = avg_reward;
+                best_node = m_children[node][i];
+            }
+        }
+        return best_node;
+    }
+}
+
+
 bool MCTS::do_rollout(Node &node) {
     path_t path = this->_select(node);
     Node leaf = path.back();
     if (leaf.m_is_solution) {
         std::cout << "Solution found." << std::endl;
-        print_board_b(leaf.m_board, m_rotated_pieces, PUZZLE_SIZE, PUZZLE_SIZE);
-        print_board_editor_b(leaf.m_board, m_rotated_pieces);
-        print_board_louis_format(leaf.m_board);
+        print_final_solution(leaf.m_board, this->m_rotated_pieces);
+        std::cout << "Tiles placed" << std::endl;
         return true;
     }
     this->_expand(leaf);
     double reward = this->_simulate(node);
+    if (reward < 0) {
+        print_final_solution(this->m_solution_node->m_board, this->m_rotated_pieces);
+        delete(this->m_solution_node);
+        return true;
+    }
+    //cout << "reward" << reward << endl;
     this->_backpropagate(path, reward);
     return false;
 }
 
+
 void MCTS::_backpropagate(path_t &path, double reward) { 
     //Send the reward back up to the ancestors of the leaf
     for (int i = 0; i < path.size(); i++) {
+        //cout << "PATH:" << path[i].m_placed_pieces << "--"  << m_Q.size() << std::endl;
+        bool in_q = m_Q.find(path[i]) == m_Q.end();
+        //cout << "PATH2:" << in_q  << std::endl;
         m_N[path[i]] += 1;
         m_Q[path[i]] += reward;
     }
@@ -131,21 +167,21 @@ path_t MCTS::_select(Node &node) {
     path_t result_path;
 
     while(true) {
-        result_path.push_back(node);
-        if (m_children.find(node) == m_children.end() || m_children[node].size() == 0) {
+        result_path.push_back(current_node);
+        if (m_children.find(current_node) == m_children.end() || m_children[current_node].size() == 0) {
             // either unexplored node; or terminal node
             return result_path;
         }
 
         //TODO (performance): replace m_children with set
-        for(int i = 0; i < m_children[node].size(); i++) {
-            if(m_children.find(m_children[node][i]) == m_children.end()) {
-                result_path.push_back(m_children[node][i]);
+        for(int i = 0; i < m_children[current_node].size(); i++) {
+            if(m_children.find(m_children[current_node][i]) == m_children.end()) {
+                result_path.push_back(m_children[current_node][i]);
                 return result_path;
             }
         }
         //descend a layer deeper
-        current_node = this->_uct_select(node);
+        current_node = this->_uct_select(current_node);
     }
 }
 
@@ -154,18 +190,18 @@ Node MCTS::_uct_select(Node &node) {
     //
     double log_N_vertex = log(m_N[node]);
 
-    double exploration_weight = 2;
+    double exploration_weight = 1;
 
     double best_score = 0;
-    Node *best_node;
+    Node best_node = m_children[node][0];
     for (int i = 0; i < m_children[node].size(); i++) {
         double ucb = m_Q[node] / m_N[node] +  sqrt(log_N_vertex / m_N[node]);
         if(ucb > best_score) { 
             best_score = ucb;
-            *best_node = m_children[node][i];
+            best_node = m_children[node][i];
         }
     }
-    return node;
+    return best_node;
 }
 
 void MCTS::_expand(Node &node) {
@@ -173,6 +209,7 @@ void MCTS::_expand(Node &node) {
     if(m_children.find(node) != m_children.end()) {
         return;
     }
+    //cout << "expand" << std::endl;
     m_children[node] = node.find_children(m_rotated_pieces, m_neighbours_map, &m_tiles_placed);
 }
 
@@ -180,7 +217,12 @@ double MCTS::_simulate(Node &node) {
     //Returns the reward for a random simulation (to completion) of `node`"
     Node current_node = node;
     while(true) {
-        if (current_node.m_is_terminal) {
+        //cout << "simulation:" << current_node.m_placed_pieces << std::endl;
+        if (current_node.m_is_solution) {
+            std::cout << "solution found in simulation" << std::endl;
+            this->m_solution_node = new Node(current_node);
+            return SOLUTION_FOUND;
+        } else if (current_node.m_is_terminal) {
             double reward = (double)current_node.m_placed_pieces.count() / (PUZZLE_SIZE * PUZZLE_SIZE);
             return reward;
         }
@@ -189,25 +231,6 @@ double MCTS::_simulate(Node &node) {
 }
 
 
-Node MCTS::choose(Node node) {
-    if (node.m_is_terminal) {
-        std::cout << "This should never happend!!!" << std::endl;
-    }
-    if (m_children.find(node) == m_children.end()) {
-        return node.find_random_child(m_rotated_pieces, m_neighbours_map, &m_tiles_placed);
-    } else {
-        int best_score = 0;
-        Node *best_node;
-        for (int i = 0; i < m_children[node].size(); i++) {
-            int avg_reward = m_Q[m_children[node][i]] / m_N[m_children[node][i]];
-            if(avg_reward > best_score) { 
-                best_score = avg_reward;
-                *best_node = m_children[node][i];
-            }
-        }
-        return node;
-    }
-}
 
 Node::Node(board &board, placed_pieces _placed_pieces, Position next_position, bool is_terminal, bool is_solution) {
     m_board = board;
@@ -218,13 +241,9 @@ Node::Node(board &board, placed_pieces _placed_pieces, Position next_position, b
 }
 
 bool Node::operator==(const Node &n2) const {
-    board m_board;
-    placed_pieces m_placed_pieces;
-    Position m_next_position;
     if (m_placed_pieces != n2.m_placed_pieces) {
         return false;
-    }
-    else if (!(m_next_position == n2.m_next_position)) {
+    } else if (!(m_next_position == n2.m_next_position)) {
         return false;
     } else if (m_board != n2.m_board) {
         return false;
@@ -274,6 +293,3 @@ Node Node::make_move(PiecePlacement piece_placement, Piece **rotated_pieces, nei
     Node new_node(new_board, new_placed_pieces, new_next_position, is_terminal, new_placed_pieces.all());
     return new_node;
 }
-
-
-

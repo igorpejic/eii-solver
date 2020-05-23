@@ -57,7 +57,7 @@ int main (int argc, const char* argv[]) {
     std::random_device rd;
     auto rng = std::default_random_engine{rd()};
     bool use_backtracker = true;
-    if (argc >=2) {
+    if (argc > 2) {
         if(std::string(argv[2]) == "mcts") {
             use_backtracker = false;
             std::cout << "Running with MCTS" << std::endl;
@@ -68,15 +68,14 @@ int main (int argc, const char* argv[]) {
     if (use_backtracker) {
         backtrack(placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &max_pieces_placed, rng, &solution_found);
     } else {
-        play_game(placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &max_pieces_placed, rng, &solution_found);
+        int _tiles_placed = play_game(placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &max_pieces_placed, rng, &solution_found);
+        tiles_placed = _tiles_placed;
     }
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     std::cout << "duration: " << duration / 1000.0 << "s" << std::endl;
-    if (duration) {
-        std::cout << "placements/s: " << tiles_placed / (duration / 1000.0) << std::endl;
-    }
+    std::cout << "placements/s: " << tiles_placed / (duration / 1000.0) << std::endl;
     std::cout << "tiles_placed: " << tiles_placed << std::endl;
 
     return 0;

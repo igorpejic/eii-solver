@@ -1,9 +1,9 @@
-#define EMPTY -1 
+#define EMPTY 8 
 
 
 extern unsigned long long int zobrist_table[PUZZLE_SIZE][PUZZLE_SIZE][PUZZLE_SIZE * PUZZLE_SIZE * 4]; 
 
-void play_game(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_map_t &neighbours_map, board board, Position position, int * const tiles_placed, int *max_pieces_placed, std::default_random_engine rng, bool *solution_found);
+int play_game(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_map_t &neighbours_map, board board, Position position, int * const tiles_placed, int *max_pieces_placed, std::default_random_engine rng, bool *solution_found);
 
 class Node {
     typedef std::vector<Node> node_children_t;
@@ -32,15 +32,11 @@ namespace std {
   {
     std::size_t operator()(const Node& n) const
     {
-      using std::size_t;
-      using std::hash;
-      using std::string;
-
       // https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-5-zobrist-hashing/
       unsigned long long int h = 0; 
       for (int i = 0; i<PUZZLE_SIZE; i++) { 
         for (int j = 0; j<PUZZLE_SIZE; j++) { 
-            if (n.m_board[i * PUZZLE_SIZE + j].index != EMPTY) 
+            if (n.m_board[i * PUZZLE_SIZE + j].orientation != EMPTY) 
             { 
                 int piece = n.m_board[i * PUZZLE_SIZE + j].index * 4 + n.m_board[i * PUZZLE_SIZE + j].orientation; 
                 h ^= zobrist_table[i][j][piece]; 
@@ -67,6 +63,8 @@ class MCTS {
 
         Node _uct_select(Node &node);
         path_t _select(Node &node);
+
+        Node *m_solution_node;
 
         void _expand(Node &node);
 
