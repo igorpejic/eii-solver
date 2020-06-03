@@ -16,9 +16,9 @@ void backtrack(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_
 
     if (_placed_pieces.count() > *max_pieces_placed) {
         *max_pieces_placed = _placed_pieces.count();
-        std::cout << *max_pieces_placed << std::endl;
-        print_board_b(board, rotated_pieces, PUZZLE_SIZE, PUZZLE_SIZE);
-        print_board_editor_b(board, rotated_pieces);
+        //std::cout << *max_pieces_placed << std::endl;
+        //print_board_b(board, rotated_pieces, PUZZLE_SIZE, PUZZLE_SIZE);
+        //print_board_editor_b(board, rotated_pieces);
     }
 
     if (position.i == PUZZLE_SIZE && position.j == 0) {

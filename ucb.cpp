@@ -28,11 +28,11 @@ Iter select_randomly(Iter start, Iter end, RandomGenerator& g) {
 
 template<typename Iter>
 Iter select_randomly(Iter start, Iter end) {
-    //static std::random_device rd;
-    //static std::mt19937 gen(rd());
     //
     //reproducibility
-    static std::mt19937 gen(567);
+    //static std::mt19937 gen(567);
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
     return select_randomly(start, end, gen);
 }
 
@@ -132,6 +132,7 @@ Node MCTS::choose(Node node) {
     } else {
         double best_score = 0;
         Node best_node = m_children[node][0];
+
         for (size_t i = 0; i < m_children[node].size(); i++) {
             double avg_reward = (double) m_QN[m_children[node][i]].q / m_QN[m_children[node][i]].n;
             //cout << "avg_reward" << avg_reward << "_"  << m_N[m_children[node][i]] << std::endl;
@@ -194,7 +195,7 @@ path_t MCTS::_select(Node &node) {
             return result_path;
         }
 
-        //TODO (performance): replace m_children with set
+        //(performance): replace m_children with set; size of these vectors is ~5 so probably no need
         for(size_t i = 0; i < m_children[current_node].size(); i++) {
             if(m_children.find(m_children[current_node][i]) == m_children.end()) {
                 result_path.push_back(m_children[current_node][i]);
@@ -245,7 +246,7 @@ double MCTS::_simulate(Node &node) {
             m_solution_node = new Node(current_node);
             return SOLUTION_FOUND;
         } else if (current_node.m_is_terminal) {
-            double reward = (double)current_node.m_placed_pieces.count() / (PUZZLE_SIZE * PUZZLE_SIZE);
+            double reward = (double)current_node.m_placed_pieces.count() * 5; /// (PUZZLE_SIZE * PUZZLE_SIZE);
             return reward;
         }
         current_node = current_node.find_random_child(m_rotated_pieces, m_neighbours_map, &m_tiles_placed);
