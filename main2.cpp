@@ -78,16 +78,16 @@ int main (int argc, const char* argv[]) {
     std::cout << "placements/s: " << tiles_placed / (duration / 1000.0) << std::endl;
     std::cout << "tiles_placed: " << tiles_placed << std::endl;
 
-    std::ofstream outfile;
-    outfile.open("results_backtrack.csv", std::ofstream::app);
-    std::time_t timestamp = std::time(nullptr);
-    outfile << std::put_time(std::localtime(&timestamp), "%y-%m-%d %OH:%OM:%OS") << ";";
-    
-    outfile << argv[1] << ";";
-    outfile << rows << ";";
-    outfile << tiles_placed << ";";
-    outfile << duration << ";";
-    outfile << std::endl;
+    //std::ofstream outfile;
+    //outfile.open("results_backtrack.csv", std::ofstream::app);
+    //std::time_t timestamp = std::time(nullptr);
+    //outfile << std::put_time(std::localtime(&timestamp), "%y-%m-%d %OH:%OM:%OS") << ";";
+    //
+    //outfile << argv[1] << ";";
+    //outfile << rows << ";";
+    //outfile << tiles_placed << ";";
+    //outfile << duration << ";";
+    //outfile << std::endl;
 
     return 0;
 }
