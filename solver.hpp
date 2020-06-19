@@ -29,8 +29,8 @@ typedef struct PiecePlacement {
 
 typedef struct Piece {
     uint_fast8_t top;
-    uint_fast8_t right;
-    uint_fast8_t bottom;
+uint_fast8_t right;
+uint_fast8_t bottom;
     uint_fast8_t left;
 } Piece;
 
@@ -65,6 +65,7 @@ void print_board_b(board board, Piece** rotated_pieces, int rows, int cols);
 
 void print_board_louis_format(board &board);
 
+
 Piece **get_rotated_pieces_b(pieces pieces);
 
 neighbours_map_t get_possible_neighbours_map(pieces pieces, Piece** rotated_pieces);
@@ -82,3 +83,14 @@ namespace std {
 }
 
 void print_final_solution(board board, Piece **rotated_pieces);
+
+uint_fast8_t get_num_correct_edges(board board, Position position, Piece **rotated_pieces);
+
+int swap_tiles(board &board, Position position_1, Position position_2, int n_correct_edges, Piece ** rotated_pieces);
+
+
+typedef std::vector<Position> corner_positions;
+
+std::pair<Position, Position> get_corner_pair(corner_positions corner_positions);
+
+corner_positions initialize_corner_positions();

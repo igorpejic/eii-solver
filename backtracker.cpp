@@ -6,7 +6,7 @@
 #include <iostream>
 using namespace std;
 
-void backtrack(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_map_t &neighbours_map, board board, Position position, int * const tiles_placed, int *max_pieces_placed, std::default_random_engine rng, bool *solution_found) { 
+void backtrack(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_map_t &neighbours_map, board board, Position position, corner_positions corner_positions, int * const tiles_placed, int *max_pieces_placed, std::default_random_engine rng, bool *solution_found) { 
 
     if (*solution_found) {
         // exit all backtracks
@@ -14,8 +14,12 @@ void backtrack(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_
     }
     std::vector<PiecePlacement> next_moves = get_valid_next_moves_b(board, _placed_pieces, neighbours_map, position, rotated_pieces);
 
+    Position tmp_position = {0, 0};
+
     if (_placed_pieces.count() > *max_pieces_placed) {
         *max_pieces_placed = _placed_pieces.count();
+
+        std::cout << (int)get_num_correct_edges(board, tmp_position, rotated_pieces) << std::endl; 
         //std::cout << *max_pieces_placed << std::endl;
         //print_board_b(board, rotated_pieces, PUZZLE_SIZE, PUZZLE_SIZE);
         //print_board_editor_b(board, rotated_pieces);
@@ -37,7 +41,7 @@ void backtrack(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_
     //shuffle the vector of possible moves before returning it such that some randomness is introduced in the search process
     //this is equivalent to drawing a lottery ticket,
     //although the chances of winning are lower with E-II
-    std::shuffle(std::begin(next_moves), std::end(next_moves), rng);
+    //std::shuffle(std::begin(next_moves), std::end(next_moves), rng);
     for (int i = 0; i < next_moves.size(); i++) {
         PiecePlacement piece_placement;
         piece_placement.index = next_moves[i].index;
