@@ -17,7 +17,6 @@
 #define SOUTH 2
 #define WEST 3
 #define GRAY 0
-#define EMPTY 5
 
 #define BOTTOM 2
 #define RIGHT 1
