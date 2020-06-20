@@ -66,7 +66,16 @@ int main (int argc, const char* argv[]) {
         }
     }
     if (use_backtracker) {
-        backtrack(placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &max_pieces_placed, rng, &solution_found);
+
+        positions corner_positions = initialize_corner_positions();
+        positions edge_positions = initialize_edge_positions();
+        positions inner_positions = initialize_inner_positions();
+
+        position_indexes corner_indexes = get_range(corner_positions.size());
+        position_indexes edge_indexes = get_range(edge_positions.size());
+        position_indexes inner_indexes = get_range(inner_positions.size());
+
+        backtrack(placed_pieces, rotated_pieces, neighbours_map, board, position, corner_positions, edge_positions, inner_positions, corner_indexes, edge_indexes, inner_indexes, &tiles_placed, &max_pieces_placed, rng, &solution_found);
     } else {
         int _tiles_placed = play_game(placed_pieces, rotated_pieces, neighbours_map, board, position, &tiles_placed, &max_pieces_placed, rng, &solution_found);
         tiles_placed = _tiles_placed;

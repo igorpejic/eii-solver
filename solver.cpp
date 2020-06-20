@@ -1,11 +1,13 @@
 #include <iostream>
 #include <iomanip>
+#include <random>
 #include <cmath>
 #include <cstdlib>
 #include <utility>      // std::pair, std::make_pair
 #include <tuple>
 #include <cstring>
 #include <fstream>
+#include <algorithm>
 #include <vector>
 #include <iostream>
 #include <array>
@@ -562,7 +564,7 @@ uint_fast8_t get_num_correct_edges(board board, Position position, Piece **rotat
     return num_correct_edges;
 }
 
-int swap_tiles(board &board, Position position_1, Position position_2, int n_correct_edges, Piece ** rotated_pieces) {
+int swap_tiles(board &board, Position position_1, Position position_2, int n_correct_edges, Piece **rotated_pieces) {
     /* return updated count of correct edges */
 
     int new_n_correct_edges = n_correct_edges;
@@ -582,16 +584,15 @@ int swap_tiles(board &board, Position position_1, Position position_2, int n_cor
     return new_n_correct_edges;
 }
 
-std::pair<Position, Position> get_corner_pair(corner_positions corner_positions)  {
-    //TODO: dont initialize every time
-    std::vector<uint_fast8_t> corner_indexes{0, 1, 2, 3};
-
-    std::shuffle(corner_indexes);
-    return std::make_pair(corner_positions[corner_indexes[0]], corner_position[corner_indexes[1]]);
+std::pair<Position, Position> get_pair_pieces(position_indexes &indexes, positions &positions, std::default_random_engine rng)  {
+    std::shuffle(indexes.begin(), indexes.end(), rng);
+    //std::cout  << positions.size() << std::endl;
+    //std::random_shuffle(indexes.begin(), indexes.end());
+    return std::make_pair(positions[indexes[0]], positions[indexes[1]]);
 }
 
-corner_positions initialize_corner_positions() {
-    corner_positions tmp_corner_positions;
+positions initialize_corner_positions() {
+    positions tmp_corner_positions;
     Position tmp_position = {0, 0};
     tmp_corner_positions.push_back (tmp_position);
     tmp_position = {0, PUZZLE_SIZE - 1};
@@ -601,4 +602,70 @@ corner_positions initialize_corner_positions() {
     tmp_position = {PUZZLE_SIZE - 1, PUZZLE_SIZE - 1};
     tmp_corner_positions.push_back (tmp_position);
     return tmp_corner_positions;
+}
+
+positions initialize_edge_positions() {
+    //done only once; dont care about performance
+    positions tmp_corner_positions;
+    for (uint_fast8_t i = 0; i < PUZZLE_SIZE; i++) {
+        for (uint_fast8_t j = 0; j < PUZZLE_SIZE; j++) {
+            if ((i == j) ||  (i == PUZZLE_SIZE -1 && j == 0) || (j == PUZZLE_SIZE - 1 && i == 0)) {
+                continue;
+            }
+            if ((i != 0 && i != PUZZLE_SIZE - 1) && j != 0 && j != PUZZLE_SIZE - 1) {
+                continue;
+            }
+            if ((j !=0 && j != (PUZZLE_SIZE - 1)) && (i !=0 && i != (PUZZLE_SIZE-1))) {
+                continue;
+            }
+            Position tmp_position = {i, j};
+            tmp_corner_positions.push_back(tmp_position);
+        }
+    }
+    return tmp_corner_positions;
+}
+
+positions initialize_inner_positions() {
+    //done only once; dont care about performance
+    positions tmp_inner_positions;
+    for (uint_fast8_t i = 0; i < PUZZLE_SIZE; i++) {
+        for (uint_fast8_t j = 0; j < PUZZLE_SIZE; j++) {
+            if (i == 0 || i == PUZZLE_SIZE - 1 || j == 0 || j == PUZZLE_SIZE - 1) {
+                continue;
+            }
+            Position tmp_position = {i, j};
+            tmp_inner_positions.push_back(tmp_position);
+        }
+    }
+    return tmp_inner_positions;
+}
+
+position_indexes get_range(int n) {
+    position_indexes vect; 
+    vect.reserve(n);
+    for (int i = 0; i < n; i++) {
+        vect.push_back(i);
+    }
+    return vect;
+}
+
+int count_correct_edges(board &board,  Piece ** rotated_pieces) {
+    int num_correct_edges = 0;
+    for (int i = 0; i < PUZZLE_SIZE; i++) {
+        for (int j = 0; j < PUZZLE_SIZE; j++) {
+            Piece *current_piece = &rotated_pieces[board[i * PUZZLE_SIZE + j].index][board[i * PUZZLE_SIZE + j].orientation];
+
+            if(j != PUZZLE_SIZE - 1 &&
+                    current_piece->right == rotated_pieces[board[i * PUZZLE_SIZE + j + 1].index][board[i * PUZZLE_SIZE + j + 1].orientation].left) {
+                num_correct_edges += 1;
+            }
+
+            if (i != PUZZLE_SIZE - 1 &&
+                    current_piece->bottom == rotated_pieces[board[(i + 1) * PUZZLE_SIZE + j].index][board[(i +1) * PUZZLE_SIZE + j].orientation].top) {
+                num_correct_edges += 1;
+            }
+
+        }
+    }
+    return num_correct_edges;
 }

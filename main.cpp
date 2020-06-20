@@ -38,7 +38,6 @@ int main (int argc, const char* argv[]) {
     strategies[MAX_DEPTH] = "maxDepth";
     strategies[AVG_DEPTH] = "avgDepth";
 
-    corner_positions = initialize_corner_positions();
     //for (auto nRollouts : nRolloutsChoices) {
         //for ( const auto &[strategy, value]: strategies ) {
                 //for (int i = 0; i < SIMULATION_REPEATS; i++) {

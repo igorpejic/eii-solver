@@ -1,5 +1,6 @@
 #include <vector>
 #include <array>
+#include <random>
 #include <utility>      // std::pair, std::make_pair
 #include <tuple>
 #include <unordered_set>
@@ -89,8 +90,17 @@ uint_fast8_t get_num_correct_edges(board board, Position position, Piece **rotat
 int swap_tiles(board &board, Position position_1, Position position_2, int n_correct_edges, Piece ** rotated_pieces);
 
 
-typedef std::vector<Position> corner_positions;
+typedef std::vector<Position> positions;
+typedef std::vector<uint_fast8_t> position_indexes;
 
-std::pair<Position, Position> get_corner_pair(corner_positions corner_positions);
+positions initialize_corner_positions();
+positions initialize_edge_positions();
+positions initialize_inner_positions();
 
-corner_positions initialize_corner_positions();
+typedef std::pair<Position, Position>  pair_positions;
+
+std::pair<Position, Position> get_pair_pieces(position_indexes &indexes, positions &corner_positions, std::default_random_engine rng);
+
+position_indexes get_range(int n);
+
+int count_correct_edges(board &board,  Piece ** rotated_pieces);
