@@ -110,4 +110,4 @@ positions get_list_of_positions(int k, position_indexes &indexes, positions &pos
 
 void print_list_of_positions (positions list_of_positions);
 
-void find_best_position_per_hole_tile (positions list_of_positions, board board, Piece ** rotated_pieces);
+int find_best_position_per_hole_tile (positions list_of_positions, board board, Piece ** rotated_pieces, int count_correct_edges);

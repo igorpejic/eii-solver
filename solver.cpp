@@ -678,6 +678,7 @@ positions get_list_of_positions(int k, position_indexes &indexes, positions &_po
     while(tmp_positions.size() < k) {
         if (i > indexes.size() -1) {
             std::cout << "Could not construct list of positions" << std::endl;
+            return tmp_positions;
         }
         Position potential_position = _positions[indexes[i]];
 
@@ -708,20 +709,24 @@ void print_list_of_positions (positions list_of_positions) {
 }
 
 
-void find_best_position_per_hole_tile (positions list_of_positions, board board, Piece ** rotated_pieces) {
+int find_best_position_per_hole_tile (positions list_of_positions, board board, Piece ** rotated_pieces, int count_correct_edges) {
     //vector< vector<double> > costMatrix = { { 10, 19, 8, 15, 0 }, 
 	//									  { 10, 18, 7, 17, 0 }, 
 	//									  { 13, 16, 9, 14, 0 }, 
 	//									  { 12, 19, 8, 18, 0 } };
     //
+    int n_correct_edges = count_correct_edges;
     int n_matrix_rows = (int)list_of_positions.size();
     std::vector< std::vector<int>> cost_matrix(n_matrix_rows); 
     std::vector< std::vector<uint_fast8_t>> orientation_matrix(n_matrix_rows); 
 
-    // TODO: send this to the function
+    int n_lost_correct_edges = 0;
+
+    // TODO: pass this to the function
     std::vector<PiecePlacement> current_piece_placements;
     for (int i = 0; i < n_matrix_rows; i++) {
         current_piece_placements.push_back(board[list_of_positions[i].i * PUZZLE_SIZE + list_of_positions[i].j]);
+        n_lost_correct_edges += get_num_correct_edges(board, list_of_positions[i], rotated_pieces);
     }
 
     for(int piece_index = 0; piece_index < n_matrix_rows; piece_index++) {
@@ -730,7 +735,6 @@ void find_best_position_per_hole_tile (positions list_of_positions, board board,
 
             //TODO: handle positions other than inner
             //
-            
             int max_correct_edges = 0;
             int max_orientation = 0;
             for (int orientation; orientation < 4; orientation++) {
@@ -758,38 +762,20 @@ void find_best_position_per_hole_tile (positions list_of_positions, board board,
             orientation_matrix[piece_index].push_back(max_orientation);
         }
     }
-	//vector<int> assignment;
-
-
-	//for (unsigned int x = 0; x < cost_matrix.size(); x++)
-	//	std::cout << x << "," << assignment[x] << "\t";
-
-    //int tmp_piece_index = board[(list_of_positions[0].i) * PUZZLE_SIZE + list_of_positions[0].j].index;
-
-    //for (int i = 0; i < n_matrix_rows - 1; i++) {
-    //    PiecePlacement tmp_piece_placement;
-    //    tmp_piece_placement.index = assignment[i];
-    //    //tmp_piece_placement.orientation = orientation_matrix[assignment[i]];
-    //    //board[list_of_position[i].i * PUZZLE_SIZE + list_of_positions[i]] = assignment[i];
-
-    //}
     //std::vector<std::vector<int> > costMatrix = { {0,  0, 1, 0}, 
 	//									          {0, 1, 0, 8},
 	//									          {0, 3, 0, 0},
 	//									          {0, 3, 0, 8}};
-    //std::vector<std::vector<int> > costMatrix = { {0,1,0,0},
-    //    {0,0,1,0},
-    //    {1,0,0,0},
-    //    {0,0,0,1},
-    //};
 
     Hungarian::Result r = Hungarian::Solve(cost_matrix, Hungarian::MODE_MINIMIZE_COST);
-    Hungarian::PrintMatrix(r.assignment);
+    // Hungarian::PrintMatrix(r.assignment);
+
+    n_correct_edges -= n_lost_correct_edges;
 
     for (int piece_index = 0; piece_index < n_matrix_rows; piece_index++) {
         int hole_index = distance(begin(r.assignment[piece_index]), find_if( begin(r.assignment[piece_index]), end(r.assignment[piece_index]), [](auto x) { return x != 0; }));
-        std::cout << hole_index << std::endl;
         board[list_of_positions[hole_index].i * PUZZLE_SIZE + list_of_positions[hole_index].j] = current_piece_placements[piece_index] ;
+        n_correct_edges += get_num_correct_edges(board, list_of_positions[hole_index], rotated_pieces);
     }
-    //TODO: costs
+    return n_correct_edges;
 }

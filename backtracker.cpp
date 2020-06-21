@@ -8,22 +8,23 @@ using namespace std;
 
 void swapper(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_map_t &neighbours_map, board board, positions &corner_positions, positions &edge_positions, positions &inner_positions, position_indexes &corner_indexes, position_indexes &edge_indexes, position_indexes &inner_indexes,  int * const tiles_placed, int *max_pieces_placed, std::default_random_engine rng, bool *solution_found) { 
 
-    pair_positions tmp_positions = get_pair_pieces(inner_indexes, inner_positions, rng);
-
-    positions list_of_positions = get_list_of_positions(4, inner_indexes, inner_positions, rng);
-    std::cout << "list of positions: " << list_of_positions.size() << std::endl;
-    print_list_of_positions(list_of_positions);
-
-    print_board_b(board, rotated_pieces, PUZZLE_SIZE, PUZZLE_SIZE);
-    find_best_position_per_hole_tile(list_of_positions, board, rotated_pieces);
-    std::cout << "Correct positions after k-swap:" << std::endl;
-    print_board_b(board, rotated_pieces, PUZZLE_SIZE, PUZZLE_SIZE);
-
+    int k = 4;
+    //pair_positions tmp_positions = get_pair_pieces(inner_indexes, inner_positions, rng);
     int correct_positions = count_correct_edges(board, rotated_pieces);
     cout << "correct_positions before starting to swap:" << correct_positions << std::endl;
-    std::cout << (int)std::get<0>(tmp_positions).i << "-" << (int)std::get<0>(tmp_positions).j << std::endl;
-    std::cout << (int)std::get<1>(tmp_positions).i << "-" << (int)std::get<1>(tmp_positions).j << std::endl;
+    for(int i =0; i < 100; i++) {
+        positions list_of_positions = get_list_of_positions(4, inner_indexes, inner_positions, rng);
+        if (list_of_positions.size() != k) {
+            continue;
+        }
+        //std::cout << "list of positions: " << list_of_positions.size() << std::endl;
+        //print_list_of_positions(list_of_positions);
 
+        //print_board_b(board, rotated_pieces, PUZZLE_SIZE, PUZZLE_SIZE);
+        correct_positions = find_best_position_per_hole_tile(list_of_positions, board, rotated_pieces, correct_positions);
+        std::cout << "Correct positions after k-swap:" << correct_positions << std::endl;
+        //print_board_b(board, rotated_pieces, PUZZLE_SIZE, PUZZLE_SIZE);
+    }
     //int new_correct_positions = swap_tiles(board, std::get<0>(tmp_positions), std::get<1>(tmp_positions), correct_positions, rotated_pieces);
 }
 
