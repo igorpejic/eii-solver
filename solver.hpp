@@ -99,8 +99,15 @@ positions initialize_inner_positions();
 
 typedef std::pair<Position, Position>  pair_positions;
 
+
 std::pair<Position, Position> get_pair_pieces(position_indexes &indexes, positions &corner_positions, std::default_random_engine rng);
 
 position_indexes get_range(int n);
 
 int count_correct_edges(board &board,  Piece ** rotated_pieces);
+
+positions get_list_of_positions(int k, position_indexes &indexes, positions &positions, std::default_random_engine rng);
+
+void print_list_of_positions (positions list_of_positions);
+
+void find_best_position_per_hole_tile (positions list_of_positions, board board, Piece ** rotated_pieces);
