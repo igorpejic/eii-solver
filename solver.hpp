@@ -111,3 +111,5 @@ positions get_list_of_positions(int k, position_indexes &indexes, positions &pos
 void print_list_of_positions (positions list_of_positions);
 
 int find_best_position_per_hole_tile (positions list_of_positions, board board, Piece ** rotated_pieces, int count_correct_edges);
+
+std::vector<PiecePlacement> get_all_next_moves_b(board &board, placed_pieces &placed_pieces, neighbours_map_t &neighbours_map, Position &position, Piece** rotated_pieces);

@@ -12,7 +12,7 @@ void swapper(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_ma
     //pair_positions tmp_positions = get_pair_pieces(inner_indexes, inner_positions, rng);
     int correct_positions = count_correct_edges(board, rotated_pieces);
     cout << "correct_positions before starting to swap:" << correct_positions << std::endl;
-    for(int i =0; i < 100; i++) {
+    for(int i =0; i < 10; i++) {
         positions list_of_positions = get_list_of_positions(4, inner_indexes, inner_positions, rng);
         if (list_of_positions.size() != k) {
             continue;
@@ -67,6 +67,16 @@ void backtrack(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_
     //this is equivalent to drawing a lottery ticket,
     //although the chances of winning are lower with E-II
     //std::shuffle(std::begin(next_moves), std::end(next_moves), rng);
+    if (next_moves.size() == 0) {
+        std::cout << "dead end" << std::endl;
+        next_moves = get_all_next_moves_b(
+                board, _placed_pieces, neighbours_map,
+                position, rotated_pieces);
+        std::cout << "next moves count" << next_moves.size() << ":" << _placed_pieces.count() << std::endl;
+        print_board_b(board, rotated_pieces, PUZZLE_SIZE, PUZZLE_SIZE);
+        //*solution_found = true;
+
+    }
     for (int i = 0; i < next_moves.size(); i++) {
         PiecePlacement piece_placement;
         piece_placement.index = next_moves[i].index;
@@ -80,5 +90,4 @@ void backtrack(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_
 
         backtrack(new_placed_pieces, rotated_pieces, neighbours_map, board, next_position, corner_positions, edge_positions, inner_positions, corner_indexes, edge_indexes, inner_indexes, tiles_placed, max_pieces_placed, rng, solution_found);
     }
-    //print_board_b(board, rotated_pieces, PUZZLE_SIZE, PUZZLE_SIZE);
 }

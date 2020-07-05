@@ -330,6 +330,14 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
             if (placed_pieces[elem.index] || rotated_pieces[elem.index][elem.orientation].top != GRAY) {
                 continue;
             }
+            if (position.j == PUZZLE_SIZE -1 && rotated_pieces[elem.index][elem.orientation].right != GRAY) { 
+                continue;
+            }
+            if (position.j != 0 && position.j != PUZZLE_SIZE -1 &&
+                    (rotated_pieces[elem.index][elem.orientation].right == GRAY ||
+                     rotated_pieces[elem.index][elem.orientation].left == GRAY)) {
+                continue;
+            }
             possible_moves.push_back(elem);
         }
     } else if(position.j == 0) {
@@ -338,6 +346,14 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
                 piece_on_top.index, piece_on_top.orientation, BOTTOM)];
         for (const auto& elem: possible_piece_placements_top) {
             if (placed_pieces[elem.index] || rotated_pieces[elem.index][elem.orientation].left != GRAY) {
+                continue;
+            }
+            if (position.i == PUZZLE_SIZE - 1 && rotated_pieces[elem.index][elem.orientation].bottom != GRAY) { 
+                continue;
+            }
+            if (position.i != 0 && position.i != PUZZLE_SIZE -1 &&
+                    (rotated_pieces[elem.index][elem.orientation].top == GRAY ||
+                     rotated_pieces[elem.index][elem.orientation].bottom == GRAY)) {
                 continue;
             }
             possible_moves.push_back(elem);
@@ -376,6 +392,17 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
             if (position.j == (PUZZLE_SIZE - 1)  && rotated_pieces[elem.index][elem.orientation].right != GRAY) {
                 continue;
             }
+            if (position.j != 0 && (position.j != PUZZLE_SIZE -1) &&
+                    (rotated_pieces[elem.index][elem.orientation].left == GRAY ||
+                     rotated_pieces[elem.index][elem.orientation].right == GRAY)) {
+                continue;
+            }
+            if (position.i != 0 && position.i != PUZZLE_SIZE -1 &&
+                    (rotated_pieces[elem.index][elem.orientation].top == GRAY ||
+                     rotated_pieces[elem.index][elem.orientation].bottom == GRAY)) {
+                continue;
+            }
+
             if (neighbour_with_less_choices == NEIGHBOUR_TOP) {
                 if(rotated_pieces[elem.index][elem.orientation].left == rotated_pieces[piece_on_left.index][piece_on_left.orientation].right) {
                     possible_moves.push_back(elem);
@@ -393,6 +420,65 @@ std::vector<PiecePlacement> get_valid_next_moves_b(board &board, placed_pieces &
     return possible_moves;
 }
 
+std::vector<PiecePlacement> get_all_next_moves_b(board &board, placed_pieces &placed_pieces, neighbours_map_t &neighbours_map, Position &position, Piece** rotated_pieces) {
+    // return any move irrelevant of edge-matching
+    // The only rule it will respect is gray color goes only next to frames 
+    // maybe we could return the tile which satisfies at least one color
+    //
+    // Also, it will not place tiles with gray colors on the inside
+    std::vector<PiecePlacement> possible_moves;
+    for (int i = 0; i < PUZZLE_SIZE * PUZZLE_SIZE; i++) {
+        if (placed_pieces[i]) {
+            continue;
+        }
+        for (int orientation = 0; orientation < 4; orientation++) {
+            if (position.i == 0) {
+                if (rotated_pieces[i][orientation].top != GRAY) {
+                    continue;
+                }
+            }
+            if (position.j == 0) {
+                if (rotated_pieces[i][orientation].left != GRAY) {
+                    continue;
+                }
+            }
+            if (position.i == PUZZLE_SIZE - 1) {
+                std::cout << "i";
+                if (rotated_pieces[i][orientation].bottom != GRAY) {
+                    continue;
+                }
+                std::cout << placed_pieces << std::endl;
+            }
+            if (position.j == PUZZLE_SIZE - 1) {
+                std::cout << "j: right:";
+                std::cout << (int)rotated_pieces[i][orientation].right << std::endl;
+                if (rotated_pieces[i][orientation].right != GRAY) {
+                    continue;
+                }
+                std::cout << "through";
+            }
+
+            if (position.j != 0 && (position.j != PUZZLE_SIZE -1) &&
+                    (rotated_pieces[i][orientation].left == GRAY ||
+                     rotated_pieces[i][orientation].right == GRAY)) {
+                continue;
+            }
+            if (position.i != 0 && position.i != PUZZLE_SIZE -1 &&
+                    (rotated_pieces[i][orientation].top == GRAY ||
+                     rotated_pieces[i][orientation].bottom == GRAY)) {
+                continue;
+            }
+
+            std::cout << (int)rotated_pieces[i][orientation].top << "-" << (int)rotated_pieces[i][orientation].right << "-" << (int)rotated_pieces[i][orientation].bottom << "-" << (int)rotated_pieces[i][orientation].left << "-" << std::endl;
+
+            PiecePlacement piece;
+            piece.index = i;
+            piece.orientation = orientation;
+            possible_moves.push_back(piece);
+        }
+    }
+    return possible_moves;
+}
 
 board initialize_board_b(int rows, int cols) {
     board board;
@@ -773,8 +859,8 @@ int find_best_position_per_hole_tile (positions list_of_positions, board board, 
     n_correct_edges -= n_lost_correct_edges;
 
     for (int piece_index = 0; piece_index < n_matrix_rows; piece_index++) {
-        int hole_index = distance(begin(r.assignment[piece_index]), find_if( begin(r.assignment[piece_index]), end(r.assignment[piece_index]), [](auto x) { return x != 0; }));
-        board[list_of_positions[hole_index].i * PUZZLE_SIZE + list_of_positions[hole_index].j] = current_piece_placements[piece_index] ;
+        int hole_index = distance(begin(r.assignment[piece_index]), find_if(begin(r.assignment[piece_index]), end(r.assignment[piece_index]), [](auto x) { return x != 0; }));
+        board[list_of_positions[hole_index].i * PUZZLE_SIZE + list_of_positions[hole_index].j] = current_piece_placements[piece_index];
         n_correct_edges += get_num_correct_edges(board, list_of_positions[hole_index], rotated_pieces);
     }
     return n_correct_edges;
