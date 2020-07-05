@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch.hpp"
 #include "solver.hpp"
+using namespace std;
 
 TEST_CASE("Rotate piece", "[factorial]") {
     std::array<int, 4> piece = {1, 2, 3, 4}; 
@@ -59,17 +60,17 @@ TEST_CASE("Initialize grid", "[factorial]") {
     int cols = 6; 
     int rows = 6; 
 
-    int *grid = initialize_grid(rows, cols);
-    REQUIRE(grid[0 * cols * 4 + 0 * 4 + 0] == -1);
-    REQUIRE(grid[5 * cols * 4 + 5 * 4 + 3] == -1);
-    REQUIRE(grid[5 * cols * 4 + 5 * 4 + 3] == -1);
+    std::vector<int> grid = initialize_grid(rows, cols);
+    REQUIRE(grid[0 * cols * 4 + 0 * 4 + 0] == EMPTY);
+    REQUIRE(grid[5 * cols * 4 + 5 * 4 + 3] == EMPTY);
+    REQUIRE(grid[5 * cols * 4 + 5 * 4 + 3] == EMPTY);
 }
 
 TEST_CASE("Is move legal", "[factorial]") {
     int cols = 6; 
     int rows = 6; 
 
-    int *grid = initialize_grid(rows, cols);
+    std::vector<int> grid = initialize_grid(rows, cols);
     std::array<int, 4> piece = {1, 2, 3, 4}; 
     std::array<int, 2> position = {0, 0};
     REQUIRE(is_move_legal(grid, piece, position, 6, 6) == false);
@@ -83,12 +84,11 @@ TEST_CASE("Is move legal 2", "[factorial]") {
     int cols = 6; 
     int rows = 6; 
 
-    int *grid = initialize_grid(rows, cols);
-
+    std::vector<int> grid = initialize_grid(rows, cols);
     std::array<int, 4> piece = {0, 4, 1, 0}; 
     std::array<int, 2> position = {0, 0};
 
-    int *new_grid; 
+    std::vector<int> new_grid;
     std::array<int, 2> new_position;
     bool success;
 
@@ -121,9 +121,9 @@ TEST_CASE("Place piece on grid", "[factorial]") {
     int rows = 6; 
     std::array<int, 2> position = {0, 0};
     std::array<int, 4> piece = {0, 2, 3, 0}; 
-    int *grid = initialize_grid(rows, cols);
+    std::vector<int> grid = initialize_grid(rows, cols);
 
-    int *new_grid; 
+    std::vector<int> new_grid;
     std::array<int, 2> new_position;
     bool success;
 
@@ -133,7 +133,7 @@ TEST_CASE("Place piece on grid", "[factorial]") {
     REQUIRE(new_grid[0 * cols * 4 + cols * 0 + 1] == 2);
     REQUIRE(new_grid[0 * cols * 4 + cols * 0 + 2] == 3);
     REQUIRE(new_grid[0 * cols * 4 + cols * 0 + 3] == 0);
-    REQUIRE(grid[0 * cols * 4 + cols * 0 + 3] == -1);
+    REQUIRE(grid[0 * cols * 4 + cols * 0 + 3] == EMPTY);
 }
 
 TEST_CASE("Get valid next moves", "[factorial]") {
@@ -143,11 +143,31 @@ TEST_CASE("Get valid next moves", "[factorial]") {
     std::array<int, 4> piece = {1, 2, 0, 0}; 
     std::vector<std::array<int, 4>> pieces;
     pieces.push_back(piece);
-    int *grid = initialize_grid(rows, cols);
+    std::vector<int> grid = initialize_grid(rows, cols);
     std::vector<std::pair<int, int>> result;
 
     result = get_valid_next_moves(grid, pieces, position, 6, 6);
     REQUIRE(result.size() == 1);
     REQUIRE(result[0].first == 0);
     REQUIRE(result[0].second == 1);
+}
+
+TEST_CASE("Find best position per hole tile", "[factorial]") {
+    int cols = 4; 
+    int rows = 4; 
+    std::vector<Piece> pieces_b = initialize_pieces_backtracker(
+            "test_fixtures/RandPuzzle4x4_01.txt");
+
+    Piece **rotated_pieces = get_rotated_pieces_b(pieces_b);
+    board  board;
+    // 0/0   11/0    4/0    3/1
+    // 8/3   12/2   15/2   10/1
+    // 5/3   13/2   14/2    9/1
+    // 2/3    7/2    6/2    1/2
+    //
+    //
+    
+    
+    find_best_position_per_hole_tile (positions list_of_positions, board board, Piece ** rotated_pieces, int count_correct_edges);
+    REQUIRE(pieces_b.size() == 16);
 }

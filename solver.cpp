@@ -450,8 +450,7 @@ std::vector<PiecePlacement> get_all_next_moves_b(board &board, placed_pieces &pl
                 std::cout << placed_pieces << std::endl;
             }
             if (position.j == PUZZLE_SIZE - 1) {
-                std::cout << "j: right:";
-                std::cout << (int)rotated_pieces[i][orientation].right << std::endl;
+                //std::cout << (int)rotated_pieces[i][orientation].right << std::endl;
                 if (rotated_pieces[i][orientation].right != GRAY) {
                     continue;
                 }
@@ -860,6 +859,7 @@ int find_best_position_per_hole_tile (positions list_of_positions, board board, 
 
     for (int piece_index = 0; piece_index < n_matrix_rows; piece_index++) {
         int hole_index = distance(begin(r.assignment[piece_index]), find_if(begin(r.assignment[piece_index]), end(r.assignment[piece_index]), [](auto x) { return x != 0; }));
+        std::cout << hole_index << std::endl;
         board[list_of_positions[hole_index].i * PUZZLE_SIZE + list_of_positions[hole_index].j] = current_piece_placements[piece_index];
         n_correct_edges += get_num_correct_edges(board, list_of_positions[hole_index], rotated_pieces);
     }

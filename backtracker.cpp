@@ -8,17 +8,17 @@ using namespace std;
 
 void swapper(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_map_t &neighbours_map, board board, positions &corner_positions, positions &edge_positions, positions &inner_positions, position_indexes &corner_indexes, position_indexes &edge_indexes, position_indexes &inner_indexes,  int * const tiles_placed, int *max_pieces_placed, std::default_random_engine rng, bool *solution_found) { 
 
-    int k = 4;
+    int k = 6;
     //pair_positions tmp_positions = get_pair_pieces(inner_indexes, inner_positions, rng);
     int correct_positions = count_correct_edges(board, rotated_pieces);
     cout << "correct_positions before starting to swap:" << correct_positions << std::endl;
     for(int i =0; i < 10; i++) {
-        positions list_of_positions = get_list_of_positions(4, inner_indexes, inner_positions, rng);
+        positions list_of_positions = get_list_of_positions(k, inner_indexes, inner_positions, rng);
         if (list_of_positions.size() != k) {
             continue;
         }
-        //std::cout << "list of positions: " << list_of_positions.size() << std::endl;
-        //print_list_of_positions(list_of_positions);
+        std::cout << "list of positions: " << list_of_positions.size() << std::endl;
+        print_list_of_positions(list_of_positions);
 
         //print_board_b(board, rotated_pieces, PUZZLE_SIZE, PUZZLE_SIZE);
         correct_positions = find_best_position_per_hole_tile(list_of_positions, board, rotated_pieces, correct_positions);
@@ -63,11 +63,7 @@ void backtrack(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_
         return;
     }
 
-    //shuffle the vector of possible moves before returning it such that some randomness is introduced in the search process
-    //this is equivalent to drawing a lottery ticket,
-    //although the chances of winning are lower with E-II
-    //std::shuffle(std::begin(next_moves), std::end(next_moves), rng);
-    if (next_moves.size() == 0) {
+    if (next_moves.size() == 0 && false) { // partial solutions
         std::cout << "dead end" << std::endl;
         next_moves = get_all_next_moves_b(
                 board, _placed_pieces, neighbours_map,
@@ -77,6 +73,11 @@ void backtrack(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_
         //*solution_found = true;
 
     }
+
+    //shuffle the vector of possible moves before returning it such that some randomness is introduced in the search process
+    //this is equivalent to drawing a lottery ticket,
+    //although the chances of winning are lower with E-II
+    //std::shuffle(std::begin(next_moves), std::end(next_moves), rng);
     for (int i = 0; i < next_moves.size(); i++) {
         PiecePlacement piece_placement;
         piece_placement.index = next_moves[i].index;
@@ -88,6 +89,9 @@ void backtrack(placed_pieces _placed_pieces, Piece** rotated_pieces, neighbours_
         (*tiles_placed)++;
         Position next_position = get_next_position_b(PUZZLE_SIZE, position);
 
-        backtrack(new_placed_pieces, rotated_pieces, neighbours_map, board, next_position, corner_positions, edge_positions, inner_positions, corner_indexes, edge_indexes, inner_indexes, tiles_placed, max_pieces_placed, rng, solution_found);
+        backtrack(new_placed_pieces, rotated_pieces, neighbours_map,
+                board, next_position, corner_positions, edge_positions,
+                inner_positions, corner_indexes, edge_indexes, inner_indexes,
+                tiles_placed, max_pieces_placed, rng, solution_found);
     }
 }
