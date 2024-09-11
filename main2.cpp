@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <ctime>
+#include <cstdint>
 #include <iomanip>
 #include <map>
 #include <random>

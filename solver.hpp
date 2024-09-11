@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <bitset>
 #include <unordered_map>
+#include <cstdint>
 
 
 void print_pieces(std::vector<std::array<int, 4>> pieces);
